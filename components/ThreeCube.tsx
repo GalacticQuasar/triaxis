@@ -342,8 +342,9 @@ export default function ThreeCube({
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
   const [exitingGames, setExitingGames] = useState<Game[]>([]);
   const [showLabels, setShowLabels] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return localStorage.getItem('triaxis.showLabels') === 'true';
+    if (typeof window === 'undefined') return true;
+    const saved = localStorage.getItem('triaxis.showLabels');
+    return saved === null || saved === 'true';
   });
   const mounted = useSyncExternalStore(
     () => () => {},
