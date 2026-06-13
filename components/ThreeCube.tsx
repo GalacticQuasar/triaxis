@@ -1,13 +1,17 @@
 'use client';
 
-import { useState, useRef, useMemo, useEffect, useCallback } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Text, Line, Billboard } from '@react-three/drei';
+import { useRouter } from 'next/navigation';
+import { Move, ZoomIn, MousePointerClick } from 'lucide-react';
 import * as THREE from 'three';
 import { Game, Vote } from '@/lib/db';
 
+const COLOR_EXEC = new THREE.Color(0x2ec4b6);
 const COLOR_INFO = new THREE.Color(0xef767a);
 const COLOR_MENTAL = new THREE.Color(0x7d53de);
+const COLOR_WHITE = new THREE.Color(0xffffff);
 
 const VOTE_ANIMATION_DURATION_SECONDS = 0.75;
 
@@ -30,9 +34,16 @@ function voteToPosition(vote: Vote): THREE.Vector3 {
 }
 
 function gameColor(game: Game): THREE.Color {
-  return new THREE.Color(0x2ec4b6)
-    .lerp(COLOR_INFO, game.info_avg / 100)
-    .lerp(COLOR_MENTAL, game.mental_avg / 100);
+  const exec = game.exec_avg / 100;
+  const info = game.info_avg / 100;
+  const mental = game.mental_avg / 100;
+  const total = exec + info + mental || 1;
+
+  return new THREE.Color(
+    (COLOR_EXEC.r * exec + COLOR_INFO.r * info + COLOR_MENTAL.r * mental) / total,
+    (COLOR_EXEC.g * exec + COLOR_INFO.g * info + COLOR_MENTAL.g * mental) / total,
+    (COLOR_EXEC.b * exec + COLOR_INFO.b * info + COLOR_MENTAL.b * mental) / total
+  );
 }
 
 function easeOutQuint(t: number): number {
@@ -231,7 +242,7 @@ function GameDot({
       >
         <sphereGeometry args={[0.25, 32, 32]} />
         <meshStandardMaterial
-          color={new THREE.Color(0xffffff)}
+          color={COLOR_WHITE}
           emissive={baseColor}
           emissiveIntensity={hovered ? 1.5 : 0.7}
           roughness={0.2}
@@ -247,18 +258,20 @@ function GameDot({
           opacity={0}
         />
       </mesh>
-      {showLabel ? (
-        <Billboard position={[position.x, position.y - 0.42, position.z]}>
-          <Text
-            fontSize={0.24}
-            color="#8daab8"
-            anchorX="center"
-            anchorY="top"
-          >
-            {game.name}
-          </Text>
-        </Billboard>
-      ) : null}
+      <Billboard
+        position={[position.x, position.y - 0.42, position.z]}
+        visible={showLabel}
+      >
+        <Text
+          fontSize={0.24}
+          color="#8daab8"
+          anchorX="center"
+          anchorY="top"
+          visible={showLabel}
+        >
+          {game.name}
+        </Text>
+      </Billboard>
     </group>
   );
 }
@@ -324,6 +337,7 @@ export default function ThreeCube({
   games: Game[];
   votesByGameId: Record<number, Vote[]>;
 }) {
+  const router = useRouter();
   const [hoveredGame, setHoveredGame] = useState<Game | null>(null);
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
   const [exitingGames, setExitingGames] = useState<Game[]>([]);
@@ -341,21 +355,29 @@ export default function ThreeCube({
   function selectGame(game: Game) {
     if (selectedGame?.id === game.id) {
       if (selectedGame) {
-        setExitingGames((prev) => [...prev, selectedGame]);
+        setExitingGames((prev) =>
+          prev.some((g) => g.id === selectedGame.id) ? prev : [...prev, selectedGame]
+        );
       }
       setSelectedGame(null);
       return;
     }
 
     if (selectedGame) {
-      setExitingGames((prev) => [...prev, selectedGame]);
+      setExitingGames((prev) =>
+        prev.some((g) => g.id === selectedGame.id) ? prev : [...prev, selectedGame]
+      );
     }
+    // If this game is currently animating out, cancel that exit so it can re-enter cleanly.
+    setExitingGames((prev) => prev.filter((g) => g.id !== game.id));
     setSelectedGame(game);
   }
 
   function deselect() {
     if (selectedGame) {
-      setExitingGames((prev) => [...prev, selectedGame]);
+      setExitingGames((prev) =>
+        prev.some((g) => g.id === selectedGame.id) ? prev : [...prev, selectedGame]
+      );
     }
     setSelectedGame(null);
   }
@@ -391,7 +413,7 @@ export default function ThreeCube({
 
         {selectedGame ? (
           <VoteCluster
-            key={selectedGame.id}
+            key={`selected-${selectedGame.id}`}
             game={selectedGame}
             votes={votesByGameId[selectedGame.id] ?? []}
             reverse={false}
@@ -400,7 +422,7 @@ export default function ThreeCube({
 
         {exitingGames.map((game) => (
           <VoteCluster
-            key={game.id}
+            key={`exiting-${game.id}`}
             game={game}
             votes={votesByGameId[game.id] ?? []}
             reverse={true}
@@ -457,9 +479,7 @@ export default function ThreeCube({
             {(votesByGameId[selectedGame.id]?.length ?? 0) === 1 ? '' : 's'}
           </div>
           <button
-            onClick={() =>
-              (window.location.href = `/game/${selectedGame.slug}`)
-            }
+            onClick={() => router.push(`/game/${selectedGame.slug}`)}
             className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-text-primary px-3 py-1.5 text-xs font-medium text-background hover:bg-text-primary/90 transition-colors"
           >
             Open game page
@@ -469,50 +489,17 @@ export default function ThreeCube({
 
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-[11px] text-text-muted flex items-center gap-4">
         <span className="flex items-center gap-1.5">
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 14a1 1 0 1 1 1-1 1 1 0 0 1-1 1zm0-3V7" />
-          </svg>
+          <Move size={12} />
           Drag to rotate
         </span>
         <span className="h-1 w-1 rounded-full bg-border-default" />
         <span className="flex items-center gap-1.5">
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 14a1 1 0 1 1 1-1 1 1 0 0 1-1 1zm0-3V7" />
-          </svg>
+          <ZoomIn size={12} />
           Scroll to zoom
         </span>
         <span className="h-1 w-1 rounded-full bg-border-default" />
         <span className="flex items-center gap-1.5">
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 14a1 1 0 1 1 1-1 1 1 0 0 1-1 1zm0-3V7" />
-          </svg>
+          <MousePointerClick size={12} />
           Click a dot to expand votes
         </span>
       </div>
