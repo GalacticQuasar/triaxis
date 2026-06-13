@@ -1,19 +1,171 @@
 @import "tailwindcss";
 
-:root {
-  --background: #0f172a;
-  --foreground: #f1f5f9;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: #011627;
+  --color-foreground: #fdfffc;
+  --color-surface: #021c2e;
+  --color-surface-raised: #082336;
+  --color-border-subtle: rgba(253,255,252,0.06);
+  --color-border-default: rgba(253,255,252,0.10);
+  --color-text-primary: #fdfffc;
+  --color-text-secondary: #8daab8;
+  --color-text-muted: #4a6b7c;
+  --color-accent-sea: #2ec4b6;
+  --color-accent-coral: #ef767a;
+  --color-accent-purple: #7d53de;
+  --font-sans: var(--font-jakarta);
+  --font-display: var(--font-rajdhani);
+  --font-mono: var(--font-jakarta-mono);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/* Noise texture overlay */
+.noise-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #011627;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(141, 170, 184, 0.3);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(141, 170, 184, 0.5);
+}
+
+/* Custom range input styling */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: rgba(253,255,252,0.08);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fdfffc;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(253,255,252,0.3), 0 0 20px rgba(253,255,252,0.1);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fdfffc;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 0 10px rgba(253,255,252,0.3), 0 0 20px rgba(253,255,252,0.1);
+}
+
+input[type="range"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.4s ease-out forwards;
+}
+
+/* Stagger delays */
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.10s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.20s; }
+.stagger-5 { animation-delay: 0.25s; }
+.stagger-6 { animation-delay: 0.30s; }
+.stagger-7 { animation-delay: 0.35s; }
+.stagger-8 { animation-delay: 0.40s; }
+
+/* Glass card base */
+.glass-card {
+  background: rgba(2, 28, 46, 0.7);
+  backdrop-filter: blur(20px) saturate(1.2);
+  -webkit-backdrop-filter: blur(20px) saturate(1.2);
+  border: 1px solid rgba(253,255,252,0.06);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(253,255,252,0.04);
+}
+
+/* Hero glow effect */
+.hero-glow {
+  background: radial-gradient(ellipse 60% 40% at 50% -10%, rgba(46, 196, 182, 0.08) 0%, transparent 70%),
+              radial-gradient(ellipse 50% 30% at 80% 20%, rgba(125, 83, 222, 0.05) 0%, transparent 60%);
+}
+
+/* Focus styles */
+:focus-visible {
+  outline: 2px solid rgba(46, 196, 182, 0.5);
+  outline-offset: 2px;
+}
+
+/* Selection color */
+::selection {
+  background: rgba(46, 196, 182, 0.25);
+  color: #fdfffc;
 }
