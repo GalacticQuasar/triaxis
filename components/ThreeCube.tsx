@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useMemo, useEffect } from 'react';
+import { useState, useRef, useMemo, useEffect, useSyncExternalStore } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Text, Line, Billboard } from '@react-three/drei';
 import { useRouter } from 'next/navigation';
@@ -341,14 +341,15 @@ export default function ThreeCube({
   const [hoveredGame, setHoveredGame] = useState<Game | null>(null);
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
   const [exitingGames, setExitingGames] = useState<Game[]>([]);
-  const [showLabels, setShowLabels] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-    const saved = localStorage.getItem('triaxis.showLabels');
-    if (saved === 'true') setShowLabels(true);
-  }, []);
+  const [showLabels, setShowLabels] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('triaxis.showLabels') === 'true';
+  });
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
 
   const gamesWithVotes = games.filter((g) => g.vote_count > 0);
 
