@@ -47,12 +47,27 @@ export type Game = {
   std_mental: number;
 };
 
+export type Vote = {
+  id: number;
+  game_id: number;
+  exec_score: number;
+  info_score: number;
+  mental_score: number;
+  created_at: string;
+};
+
 export function getAllGames(): Game[] {
   return db.prepare('SELECT * FROM games ORDER BY name ASC').all() as Game[];
 }
 
 export function getGameBySlug(slug: string): Game | undefined {
   return db.prepare('SELECT * FROM games WHERE slug = ?').get(slug) as Game | undefined;
+}
+
+export function getVotesByGameId(gameId: number): Vote[] {
+  return db
+    .prepare('SELECT * FROM votes WHERE game_id = ? ORDER BY created_at ASC')
+    .all(gameId) as Vote[];
 }
 
 export function insertVoteAndUpdate(
