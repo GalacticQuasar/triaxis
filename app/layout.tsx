@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Rajdhani, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
+import { Footer } from "./_components/Footer";
 
 const rajdhani = Rajdhani({
   variable: "--font-rajdhani",
@@ -67,35 +68,7 @@ export default function RootLayout({
 
         <main className="flex-1 pt-16">{children}</main>
 
-        <footer className="border-t border-border-subtle text-xs text-text-muted px-6 py-8"
-        >
-          <div className="mx-auto max-w-6xl flex flex-col sm:flex-row items-center justify-between gap-4"
-          >
-            <div className="flex items-center gap-2"
-            >
-              <div className="h-1.5 w-1.5 rounded-full bg-accent-sea animate-pulse" />
-              <span>Triaxis — anonymous community voting</span>
-            </div>
-            <div className="flex items-center gap-4 text-text-muted"
-            >
-              <span className="flex items-center gap-1.5"
-              >
-                <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: '#2ec4b6' }} />
-                Execution
-              </span>
-              <span className="flex items-center gap-1.5"
-              >
-                <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: '#ef767a' }} />
-                Info
-              </span>
-              <span className="flex items-center gap-1.5"
-              >
-                <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: '#7d53de' }} />
-                Mental
-              </span>
-            </div>
-          </div>
-        </footer>
+        <Footer />
       </body>
     </html>
   );
