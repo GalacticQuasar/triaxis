@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useRef, useMemo, useEffect } from 'react';
+import { useState, useRef, useMemo, useEffect, useCallback } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Text, Line } from '@react-three/drei';
+import { OrbitControls, Text, Line, Billboard } from '@react-three/drei';
 import * as THREE from 'three';
 import { Game, Vote } from '@/lib/db';
 
@@ -178,18 +178,41 @@ function GameDot({
   game,
   onHover,
   onSelect,
+  showLabel,
 }: {
   game: Game;
   onHover: (game: Game | null) => void;
   onSelect: (game: Game) => void;
+  showLabel: boolean;
 }) {
   const position = useMemo(() => avgToPosition(game), [game]);
   const [hovered, setHovered] = useState(false);
   const baseColor = useMemo(() => gameColor(game), [game]);
 
+  const dotRef = useRef<THREE.Mesh>(null);
+  const glowRef = useRef<THREE.Mesh>(null);
+  const glowMatRef = useRef<THREE.MeshBasicMaterial>(null);
+
+  const dotTarget = useMemo(() => new THREE.Vector3(hovered ? 1.4 : 1, hovered ? 1.4 : 1, hovered ? 1.4 : 1), [hovered]);
+  const glowTarget = useMemo(() => new THREE.Vector3(hovered ? 1 : 0, hovered ? 1 : 0, hovered ? 1 : 0), [hovered]);
+  const opacityTarget = hovered ? 0.15 : 0;
+
+  useFrame(() => {
+    if (dotRef.current) {
+      dotRef.current.scale.lerp(dotTarget, 0.15);
+    }
+    if (glowRef.current) {
+      glowRef.current.scale.lerp(glowTarget, 0.15);
+    }
+    if (glowMatRef.current) {
+      glowMatRef.current.opacity = THREE.MathUtils.lerp(glowMatRef.current.opacity, opacityTarget, 0.15);
+    }
+  });
+
   return (
     <group>
       <mesh
+        ref={dotRef}
         position={position.toArray()}
         onPointerOver={(e) => {
           e.stopPropagation();
@@ -206,7 +229,7 @@ function GameDot({
           onSelect(game);
         }}
       >
-        <sphereGeometry args={[hovered ? 0.35 : 0.25, 32, 32]} />
+        <sphereGeometry args={[0.25, 32, 32]} />
         <meshStandardMaterial
           color={new THREE.Color(0xffffff)}
           emissive={baseColor}
@@ -215,11 +238,26 @@ function GameDot({
           metalness={0.8}
         />
       </mesh>
-      {hovered ? (
-        <mesh position={position.toArray()}>
-          <sphereGeometry args={[0.45, 32, 32]} />
-          <meshBasicMaterial color={baseColor} transparent opacity={0.15} />
-        </mesh>
+      <mesh ref={glowRef} position={position.toArray()} scale={[0, 0, 0]}>
+        <sphereGeometry args={[0.45, 32, 32]} />
+        <meshBasicMaterial
+          ref={glowMatRef}
+          color={baseColor}
+          transparent
+          opacity={0}
+        />
+      </mesh>
+      {showLabel ? (
+        <Billboard position={[position.x, position.y - 0.42, position.z]}>
+          <Text
+            fontSize={0.24}
+            color="#8daab8"
+            anchorX="center"
+            anchorY="top"
+          >
+            {game.name}
+          </Text>
+        </Billboard>
       ) : null}
     </group>
   );
@@ -289,16 +327,18 @@ export default function ThreeCube({
   const [hoveredGame, setHoveredGame] = useState<Game | null>(null);
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
   const [exitingGames, setExitingGames] = useState<Game[]>([]);
+  const [showLabels, setShowLabels] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const saved = localStorage.getItem('triaxis.showLabels');
+    if (saved === 'true') setShowLabels(true);
+  }, []);
 
   const gamesWithVotes = games.filter((g) => g.vote_count > 0);
 
   function selectGame(game: Game) {
-    const votes = votesByGameId[game.id] ?? [];
-    if (votes.length <= 1) {
-      window.location.href = `/game/${game.slug}`;
-      return;
-    }
-
     if (selectedGame?.id === game.id) {
       if (selectedGame) {
         setExitingGames((prev) => [...prev, selectedGame]);
@@ -345,6 +385,7 @@ export default function ThreeCube({
             game={game}
             onHover={setHoveredGame}
             onSelect={selectGame}
+            showLabel={showLabels}
           />
         ))}
 
@@ -475,6 +516,29 @@ export default function ThreeCube({
           Click a dot to expand votes
         </span>
       </div>
+
+      <button
+        onClick={() => {
+          const next = !showLabels;
+          setShowLabels(next);
+          if (mounted) localStorage.setItem('triaxis.showLabels', String(next));
+        }}
+        className="absolute bottom-6 left-6 flex items-center gap-3 rounded-full border border-border-default bg-background/90 px-4 py-2 text-xs font-medium text-text-secondary shadow-2xl backdrop-blur-xl transition-all hover:text-text-primary hover:border-text-secondary/30"
+        aria-pressed={showLabels}
+      >
+        <span
+          className={`relative h-5 w-9 rounded-full transition-colors ${
+            showLabels ? 'bg-accent-sea' : 'bg-surface-raised'
+          }`}
+        >
+          <span
+            className={`absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${
+              showLabels ? 'translate-x-4' : 'translate-x-0'
+            }`}
+          />
+        </span>
+        Labels
+      </button>
     </div>
   );
 }
