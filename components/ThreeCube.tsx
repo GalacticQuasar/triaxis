@@ -276,6 +276,43 @@ function GameDot({
   );
 }
 
+function GradientAxisLines() {
+  const group = useMemo(() => {
+    const axes: [THREE.Vector3, THREE.Color][] = [
+      [new THREE.Vector3(-5, -5, -5), COLOR_EXEC],
+      [new THREE.Vector3(-5, -5, -5), COLOR_INFO],
+      [new THREE.Vector3(-5, -5, -5), COLOR_MENTAL],
+    ];
+
+    const g = new THREE.Group();
+    const originColor = new THREE.Color(0xffffff);
+
+    for (const [start, color] of axes) {
+      const end = new THREE.Vector3(
+        start.x + (color === COLOR_EXEC ? 10 : 0),
+        start.y + (color === COLOR_INFO ? 10 : 0),
+        start.z + (color === COLOR_MENTAL ? 10 : 0)
+      );
+      const geometry = new THREE.BufferGeometry().setFromPoints([start, end]);
+      const vertexColors = new Float32Array([
+        originColor.r, originColor.g, originColor.b,
+        color.r, color.g, color.b,
+      ]);
+      geometry.setAttribute('color', new THREE.BufferAttribute(vertexColors, 3));
+      const material = new THREE.LineBasicMaterial({
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.85,
+      });
+      g.add(new THREE.Line(geometry, material));
+    }
+
+    return g;
+  }, []);
+
+  return <primitive object={group} />;
+}
+
 function Axes() {
   const color = '#1a3a4a';
   const lines: [THREE.Vector3, THREE.Vector3][] = [
@@ -326,6 +363,7 @@ function Axes() {
       >
         Mental (Z)
       </Text>
+      <GradientAxisLines />
     </group>
   );
 }
