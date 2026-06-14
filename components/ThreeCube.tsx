@@ -424,7 +424,7 @@ export default function ThreeCube({
   }
 
   return (
-    <div className="relative h-[calc(100vh-64px)] w-full">
+    <div className="relative h-[calc(100vh-64px)] w-full animate-fade-in">
       <Canvas
         camera={{ position: [12, 12, 12], fov: 50 }}
         onPointerMissed={deselect}
