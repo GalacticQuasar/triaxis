@@ -1,12 +1,29 @@
 'use client';
 
 import { useState } from 'react';
-import ScoringGuide from './ScoringGuide';
 
 const COLORS = {
   exec: '#2ec4b6',
   info: '#ef767a',
   mental: '#7d53de',
+};
+
+const AXIS_DETAILS = {
+  Execution: {
+    what: 'Aim, timing, movement, muscle memory, inputs.',
+    cheat: 'Aimbot / perfect inputs every time',
+    games: 'Osu!, Tetris, Quake, Geometry Dash, Smash Melee',
+  },
+  Information: {
+    what: 'Knowing things your opponent does not: hidden state, map awareness, economy tracking.',
+    cheat: 'Wallhack / seeing hidden information',
+    games: 'CS2 (info reads), Poker (hole cards), Hearthstone (deck tracking), StarCraft (scouting)',
+  },
+  Mental: {
+    what: 'Reading people, adapting on the fly, managing variance, long-term strategy, tilt control.',
+    cheat: 'Seeing the future / perfect reads every time',
+    games: 'Poker, Chess, Dota 2, League of Legends, Fighting Games (mind games)',
+  },
 };
 
 export default function VoteSliders({
@@ -57,7 +74,6 @@ export default function VoteSliders({
           </h3>
           <p className="text-xs text-text-muted mt-1">Drag sliders to assign scores from 0 to 100</p>
         </div>
-        <ScoringGuide />
       </div>
 
       <div className="space-y-6">
@@ -135,6 +151,8 @@ function Slider({
   onChange: (v: number) => void;
   disabled?: boolean;
 }) {
+  const details = AXIS_DETAILS[label as keyof typeof AXIS_DETAILS];
+
   return (
     <div>
       <div className="mb-3 flex items-center justify-between">
@@ -172,6 +190,17 @@ function Slider({
         <span>0</span>
         <span>50</span>
         <span>100</span>
+      </div>
+      <div className="mt-3 rounded-lg border border-border-subtle bg-surface-raised/50 p-3 text-xs leading-relaxed text-text-secondary">
+        <p className="mb-1.5">
+          <span className="font-medium text-text-muted">What it tests:</span> {details.what}
+        </p>
+        <p className="mb-1.5">
+          <span className="font-medium text-text-muted">Cheat test:</span> {details.cheat}
+        </p>
+        <p>
+          <span className="font-medium text-text-muted">High-score examples:</span> {details.games}
+        </p>
       </div>
     </div>
   );
