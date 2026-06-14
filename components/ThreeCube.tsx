@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useMemo, useEffect, useSyncExternalStore } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Text, Line, Billboard } from '@react-three/drei';
 import { useRouter } from 'next/navigation';
@@ -185,20 +185,25 @@ function VoteCluster({
   );
 }
 
+const COLOR_GRAY = new THREE.Color(0x4a5568);
+
 function GameDot({
   game,
   onHover,
   onSelect,
   showLabel,
+  selectedId,
 }: {
   game: Game;
   onHover: (game: Game | null) => void;
   onSelect: (game: Game) => void;
   showLabel: boolean;
+  selectedId: number | null;
 }) {
   const position = useMemo(() => avgToPosition(game), [game]);
   const [hovered, setHovered] = useState(false);
   const baseColor = useMemo(() => gameColor(game), [game]);
+  const isDimmed = selectedId !== null && selectedId !== game.id;
 
   const dotRef = useRef<THREE.Mesh>(null);
   const glowRef = useRef<THREE.Mesh>(null);
@@ -242,8 +247,8 @@ function GameDot({
       >
         <sphereGeometry args={[0.25, 32, 32]} />
         <meshStandardMaterial
-          color={COLOR_WHITE}
-          emissive={baseColor}
+          color={isDimmed ? COLOR_GRAY : COLOR_WHITE}
+          emissive={isDimmed ? COLOR_GRAY : baseColor}
           emissiveIntensity={hovered ? 1.5 : 0.7}
           roughness={0.2}
           metalness={0.8}
@@ -253,7 +258,7 @@ function GameDot({
         <sphereGeometry args={[0.45, 32, 32]} />
         <meshBasicMaterial
           ref={glowMatRef}
-          color={baseColor}
+          color={isDimmed ? COLOR_GRAY : baseColor}
           transparent
           opacity={0}
         />
@@ -379,16 +384,8 @@ export default function ThreeCube({
   const [hoveredGame, setHoveredGame] = useState<Game | null>(null);
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
   const [exitingGames, setExitingGames] = useState<Game[]>([]);
-  const [showLabels, setShowLabels] = useState(() => {
-    if (typeof window === 'undefined') return true;
-    const saved = localStorage.getItem('triaxis.showLabels');
-    return saved === null || saved === 'true';
-  });
-  const mounted = useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false
-  );
+  const [showLabels, setShowLabels] = useState(true);
+  const mountedRef = useRef(false);
 
   const gamesWithVotes = games.filter((g) => g.vote_count > 0);
 
@@ -448,6 +445,7 @@ export default function ThreeCube({
             onHover={setHoveredGame}
             onSelect={selectGame}
             showLabel={showLabels}
+            selectedId={selectedGame?.id ?? null}
           />
         ))}
 
@@ -520,7 +518,7 @@ export default function ThreeCube({
           </div>
           <button
             onClick={() => router.push(`/game/${selectedGame.slug}`)}
-            className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-text-primary px-3 py-1.5 text-xs font-medium text-background hover:bg-text-primary/90 transition-colors"
+            className="mt-3 inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-text-primary px-3 py-1.5 text-xs font-medium text-background hover:bg-text-primary/90 transition-colors"
           >
             Open game page
           </button>
@@ -548,7 +546,16 @@ export default function ThreeCube({
         onClick={() => {
           const next = !showLabels;
           setShowLabels(next);
-          if (mounted) localStorage.setItem('triaxis.showLabels', String(next));
+          if (typeof window !== 'undefined') {
+          if (!mountedRef.current) {
+            mountedRef.current = true;
+            const saved = localStorage.getItem('triaxis.showLabels');
+            if (saved === 'false') {
+              setShowLabels(false);
+            }
+          }
+          localStorage.setItem('triaxis.showLabels', String(next));
+        }
         }}
         className="absolute bottom-6 left-6 flex items-center gap-3 rounded-full border border-border-default bg-background/90 px-4 py-2 text-xs font-medium text-text-secondary shadow-2xl backdrop-blur-xl transition-all hover:text-text-primary hover:border-text-secondary/30"
         aria-pressed={showLabels}

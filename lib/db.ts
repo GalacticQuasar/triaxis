@@ -4,6 +4,10 @@ import path from 'path';
 const DB_PATH = path.join(process.cwd(), 'triaxis.db');
 const db = new Database(DB_PATH);
 
+// Enable write-ahead logging and enforce foreign key constraints.
+db.pragma('journal_mode = WAL');
+db.pragma('foreign_keys = ON');
+
 db.exec(`
   CREATE TABLE IF NOT EXISTS games (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -14,10 +18,7 @@ db.exec(`
     exec_avg REAL DEFAULT 50.0 CHECK(exec_avg BETWEEN 0 AND 100),
     info_avg REAL DEFAULT 50.0 CHECK(info_avg BETWEEN 0 AND 100),
     mental_avg REAL DEFAULT 50.0 CHECK(mental_avg BETWEEN 0 AND 100),
-    vote_count INTEGER DEFAULT 0,
-    std_exec REAL DEFAULT 0.0,
-    std_info REAL DEFAULT 0.0,
-    std_mental REAL DEFAULT 0.0
+    vote_count INTEGER DEFAULT 0
   );
 
   CREATE TABLE IF NOT EXISTS votes (
@@ -28,6 +29,8 @@ db.exec(`
     mental_score INTEGER NOT NULL CHECK(mental_score BETWEEN 0 AND 100),
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
+
+  CREATE INDEX IF NOT EXISTS idx_votes_game_id ON votes(game_id);
 `);
 
 export { db };
@@ -42,9 +45,6 @@ export type Game = {
   info_avg: number;
   mental_avg: number;
   vote_count: number;
-  std_exec: number;
-  std_info: number;
-  std_mental: number;
 };
 
 export type Vote = {

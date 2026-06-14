@@ -3,6 +3,7 @@ declare module 'better-sqlite3' {
     constructor(filename: string, options?: object);
     prepare(sql: string): Statement;
     exec(sql: string): void;
+    pragma(source: string, options?: { simple?: boolean }): unknown;
     transaction(fn: () => void): () => void;
     close(): void;
   }

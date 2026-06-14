@@ -25,18 +25,24 @@ export default function VoteSliders({
   const [mental, setMental] = useState(initialMental);
   const [submitted, setSubmitted] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async () => {
     setSaving(true);
+    setError(null);
     try {
-      await fetch('/api/votes', {
+      const res = await fetch('/api/votes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ slug, exec, info, mental }),
       });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || `Vote failed (${res.status})`);
+      }
       setSubmitted(true);
-    } catch {
-      // ignore
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Vote failed. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -106,6 +112,12 @@ export default function VoteSliders({
           Refresh the page to see updated averages
         </div>
       ) : null}
+      {error ? (
+        <div className="flex items-center gap-2 text-xs text-accent-coral animate-fade-in">
+          <span className="h-1 w-1 rounded-full bg-accent-coral animate-pulse" />
+          {error}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -142,6 +154,7 @@ function Slider({
       </div>
       <div className="relative">
         <input
+          aria-label={label}
           type="range"
           min={0}
           max={100}
