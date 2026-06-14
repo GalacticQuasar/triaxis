@@ -52,6 +52,7 @@ components/
   VoteSliders.tsx         # Three colored sliders
   ScoringGuide.tsx        # Help modal for rating
   ThreeCube.tsx           # R3F Canvas + scene
+  CubeStatsCard.tsx       # Rich stats panel shown on cube dot selection
 lib/
   db.ts                   # SQLite client, schema, helpers
   seed.ts                 # Seed 10 games

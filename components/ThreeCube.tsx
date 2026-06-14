@@ -3,8 +3,8 @@
 import { useState, useRef, useMemo, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Text, Line, Billboard } from '@react-three/drei';
-import { useRouter } from 'next/navigation';
 import { Move, ZoomIn, MousePointerClick } from 'lucide-react';
+import CubeStatsCard from './CubeStatsCard';
 import * as THREE from 'three';
 import { Game, Vote } from '@/lib/db';
 
@@ -204,14 +204,19 @@ function GameDot({
   const [hovered, setHovered] = useState(false);
   const baseColor = useMemo(() => gameColor(game), [game]);
   const isDimmed = selectedId !== null && selectedId !== game.id;
+  const labelVisible = showLabel && (selectedId === null || selectedId === game.id);
 
   const dotRef = useRef<THREE.Mesh>(null);
   const glowRef = useRef<THREE.Mesh>(null);
   const glowMatRef = useRef<THREE.MeshBasicMaterial>(null);
+  const labelRef = useRef<THREE.Mesh | null>(null);
+  const labelMatRef = useRef<THREE.MeshBasicMaterial | null>(null);
 
   const dotTarget = useMemo(() => new THREE.Vector3(hovered ? 1.4 : 1, hovered ? 1.4 : 1, hovered ? 1.4 : 1), [hovered]);
   const glowTarget = useMemo(() => new THREE.Vector3(hovered ? 1 : 0, hovered ? 1 : 0, hovered ? 1 : 0), [hovered]);
   const opacityTarget = hovered ? 0.15 : 0;
+  const labelOpacityTarget = labelVisible ? 1 : 0;
+  const LABEL_FADE_SPEED = 0.08;
 
   useFrame(() => {
     if (dotRef.current) {
@@ -222,6 +227,9 @@ function GameDot({
     }
     if (glowMatRef.current) {
       glowMatRef.current.opacity = THREE.MathUtils.lerp(glowMatRef.current.opacity, opacityTarget, 0.15);
+    }
+    if (labelMatRef.current) {
+      labelMatRef.current.opacity = THREE.MathUtils.lerp(labelMatRef.current.opacity, labelOpacityTarget, LABEL_FADE_SPEED);
     }
   });
 
@@ -265,14 +273,19 @@ function GameDot({
       </mesh>
       <Billboard
         position={[position.x, position.y - 0.42, position.z]}
-        visible={showLabel}
+        visible={labelVisible || true}
       >
         <Text
+          ref={(ref) => {
+            labelRef.current = ref;
+            const mat = ref?.material;
+            labelMatRef.current = mat instanceof THREE.MeshBasicMaterial ? mat : null;
+          }}
           fontSize={0.24}
           color="#8daab8"
           anchorX="center"
           anchorY="top"
-          visible={showLabel}
+          visible={true}
         >
           {game.name}
         </Text>
@@ -380,7 +393,6 @@ export default function ThreeCube({
   games: Game[];
   votesByGameId: Record<number, Vote[]>;
 }) {
-  const router = useRouter();
   const [hoveredGame, setHoveredGame] = useState<Game | null>(null);
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
   const [exitingGames, setExitingGames] = useState<Game[]>([]);
@@ -507,22 +519,11 @@ export default function ThreeCube({
       ) : null}
 
       {selectedGame ? (
-        <div className="absolute right-4 top-4 rounded-xl border border-border-default bg-background/90 px-5 py-4 text-sm shadow-2xl backdrop-blur-xl animate-fade-in">
-          <div className="font-semibold text-text-primary text-base">
-            {selectedGame.name}
-          </div>
-          <div className="mt-1 text-[11px] text-text-muted">
-            Showing {votesByGameId[selectedGame.id]?.length ?? 0} individual
-            vote
-            {(votesByGameId[selectedGame.id]?.length ?? 0) === 1 ? '' : 's'}
-          </div>
-          <button
-            onClick={() => router.push(`/game/${selectedGame.slug}`)}
-            className="mt-3 inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-text-primary px-3 py-1.5 text-xs font-medium text-background hover:bg-text-primary/90 transition-colors"
-          >
-            Open game page
-          </button>
-        </div>
+        <CubeStatsCard
+          game={selectedGame}
+          votes={votesByGameId[selectedGame.id] ?? []}
+          allGames={games}
+        />
       ) : null}
 
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-[11px] text-text-muted flex items-center gap-4">
