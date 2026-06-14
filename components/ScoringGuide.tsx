@@ -52,7 +52,7 @@ export default function ScoringGuide() {
           {/* Backdrop */}
           <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
 
-          <div className="relative w-full max-w-2xl rounded-2xl border border-border-default glass-card p-6 sm:p-8 shadow-2xl">
+          <div className="relative w-full max-w-2xl rounded-2xl border border-border-default bg-surface p-6 sm:p-8 shadow-2xl">
             <div className="mb-6 flex items-start justify-between">
               <div>
                 <h2 className="font-[family-name:var(--font-rajdhani)] text-xl font-bold tracking-wide text-text-primary">
@@ -100,26 +100,6 @@ export default function ScoringGuide() {
                   </div>
                 </div>
               ))}
-            </div>
-
-            <div className="mt-5 rounded-xl border border-border-subtle bg-surface-raised/50 p-5 text-sm text-text-secondary">
-              <strong className="block mb-3 text-text-primary font-[family-name:var(--font-rajdhani)] uppercase tracking-wider text-xs">
-                Important Rules
-              </strong>
-              <ul className="space-y-2">
-                <li className="flex items-start gap-2">
-                  <span className="mt-1.5 h-1 w-1 rounded-full bg-accent-sea shrink-0" />
-                  These are three independent bars, not a triangle. A game can max all three at once.
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="mt-1.5 h-1 w-1 rounded-full bg-accent-coral shrink-0" />
-                  Only rate competitive PvP or ranked PvE games.
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="mt-1.5 h-1 w-1 rounded-full bg-accent-purple shrink-0" />
-                  Vote based on the skill ceiling at high-level play, not how you personally feel.
-                </li>
-              </ul>
             </div>
           </div>
         </div>
