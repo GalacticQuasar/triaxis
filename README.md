@@ -54,6 +54,9 @@ npx tsx lib/seed.ts
 app/
   layout.tsx              # Root layout with dark theme and nav
   page.tsx                # Homepage: catalog grid
+  globals.css             # Tailwind v4 theme tokens & utilities
+  _components/
+    Footer.tsx            # Client footer (hidden on /cube)
   cube/page.tsx           # 3D scatter plot
   game/[slug]/page.tsx    # Game detail + voting
   api/games/route.ts      # Games API
@@ -63,12 +66,14 @@ components/
   VoteSliders.tsx         # Three colored sliders
   ScoringGuide.tsx        # Help modal explaining the axes
   ThreeCube.tsx           # R3F Canvas + scene setup
+  CubeStatsCard.tsx       # Rich stats panel shown on cube dot selection
 lib/
   db.ts                   # SQLite client, schema, helpers
   seed.ts                 # Seed 10 competitive games
   utils.ts                # Sorting helpers
+  better-sqlite3.d.ts     # Type declarations for better-sqlite3
 public/
-  placeholder-cover.svg   # Placeholder cover art
+  placeholder-cover.svg   # Placeholder cover art (plus default Next.js assets)
 ```
 
 ## Notes

@@ -43,6 +43,10 @@ npm run lint     # ESLint
 app/
   layout.tsx              # Root layout, dark mode, nav
   page.tsx                # Game catalog grid (home)
+  globals.css             # Tailwind v4 theme tokens & utilities
+  favicon.ico
+  _components/
+    Footer.tsx            # Client footer (hidden on /cube)
   cube/page.tsx           # Full-page 3D scatter plot
   game/[slug]/page.tsx    # Game detail + voting
   api/games/route.ts      # GET list / single game
@@ -55,11 +59,11 @@ components/
   CubeStatsCard.tsx       # Rich stats panel shown on cube dot selection
 lib/
   db.ts                   # SQLite client, schema, helpers
-  seed.ts                 # Seed 10 games
+  seed.ts                 # Seed 10 games + 30 initial votes (3 per game)
   utils.ts                # Sorting helpers
   better-sqlite3.d.ts     # Type declarations
 public/
-  placeholder-cover.svg
+  placeholder-cover.svg   # Default Next.js placeholder assets (file/globe/window.svg)
 ```
 
 ## Conventions
