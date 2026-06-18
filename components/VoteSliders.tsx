@@ -3,9 +3,9 @@
 import { useState } from 'react';
 
 const COLORS = {
-  exec: '#2ec4b6',
-  info: '#ef767a',
-  mental: '#7d53de',
+  exec: '#d5ff00',
+  info: '#00f0ff',
+  mental: '#ff2a00',
 };
 
 const AXIS_DETAILS = {
@@ -102,20 +102,20 @@ export default function VoteSliders({
   return (
     <>
       {/* Community Averages */}
-      <div className="mb-6 rounded-2xl glass-card p-6 lg:p-8">
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="font-[family-name:var(--font-rajdhani)] text-sm font-semibold uppercase tracking-widest text-text-secondary">
+      <div className="mb-6 grunge-card p-6 lg:p-8">
+        <div className="flex items-center justify-between mb-5 border-b border-stroke pb-3">
+          <h2 className="font-[family-name:var(--font-dharma)] text-2xl font-normal uppercase tracking-wide text-ink">
             Community Averages
           </h2>
-          <div className="text-[11px] text-text-muted flex items-center gap-1.5">
+          <div className="text-[11px] text-ink-muted flex items-center gap-1.5 font-[family-name:var(--font-mono)] uppercase tracking-wider">
             {empty ? (
               <>
-                <span className="h-1.5 w-1.5 rounded-full bg-accent-coral/60 animate-pulse" />
+                <span className="h-1.5 w-1.5 bg-red animate-pulse" />
                 No votes yet
               </>
             ) : (
               <>
-                <span className="h-1.5 w-1.5 rounded-full bg-accent-sea" />
+                <span className="h-1.5 w-1.5 bg-acid" />
                 {averages.voteCount} vote{averages.voteCount === 1 ? '' : 's'}
               </>
             )}
@@ -130,13 +130,15 @@ export default function VoteSliders({
       </div>
 
       {/* Vote panel */}
-      <div className="space-y-6 rounded-2xl glass-card p-6 lg:p-8">
-        <div className="flex items-center justify-between">
+      <div className="space-y-6 grunge-card p-6 lg:p-8">
+        <div className="flex items-center justify-between border-b border-stroke pb-3">
           <div>
-            <h3 className="font-[family-name:var(--font-rajdhani)] text-sm font-semibold uppercase tracking-widest text-text-secondary">
+            <h3 className="font-[family-name:var(--font-dharma)] text-2xl font-normal uppercase tracking-wide text-ink">
               Rate this game
             </h3>
-            <p className="text-xs text-text-muted mt-1">Drag sliders to assign scores from 0 to 100</p>
+            <p className="text-xs text-ink-muted mt-1 font-[family-name:var(--font-mono)] uppercase tracking-wider">
+              Drag sliders to assign scores from 0 to 100
+            </p>
           </div>
         </div>
 
@@ -149,26 +151,14 @@ export default function VoteSliders({
         <button
           onClick={handleSubmit}
           disabled={saving || submitted}
-          className="relative w-full rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-300 overflow-hidden group disabled:cursor-not-allowed"
-          style={{
-            background: submitted
-              ? 'rgba(46, 196, 182, 0.1)'
-              : saving
-                ? 'rgba(239, 118, 122, 0.1)'
-                : 'linear-gradient(135deg, rgba(46, 196, 182, 0.15), rgba(125, 83, 222, 0.15))',
-            border: submitted
-              ? '1px solid rgba(46, 196, 182, 0.3)'
-              : '1px solid rgba(253,255,252,0.1)',
-            color: submitted ? '#2ec4b6' : saving ? '#ef767a' : '#fdfffc',
-          }}
+          className={`relative w-full btn transition-all duration-300 overflow-hidden group disabled:cursor-not-allowed ${
+            submitted ? 'border-acid text-acid' : saving ? 'border-red text-red' : 'btn-primary'
+          }`}
         >
-          {/* Button hover glow */}
-          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-r from-accent-sea/10 via-accent-purple/10 to-accent-sea/10" />
-
           <span className="relative flex items-center justify-center gap-2">
             {submitted ? (
               <>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="square" strokeLinejoin="miter">
                   <polyline points="20 6 9 17 4 12"/>
                 </svg>
                 Vote Submitted
@@ -187,14 +177,14 @@ export default function VoteSliders({
         </button>
 
         {submitted ? (
-          <div className="flex items-center gap-2 text-xs text-accent-sea animate-fade-in">
-            <span className="h-1 w-1 rounded-full bg-accent-sea animate-pulse" />
+          <div className="flex items-center gap-2 text-xs text-acid animate-fade-in font-[family-name:var(--font-mono)] uppercase tracking-wider">
+            <span className="h-1 w-1 bg-acid animate-pulse" />
             Averages updated above
           </div>
         ) : null}
         {error ? (
-          <div className="flex items-center gap-2 text-xs text-accent-coral animate-fade-in">
-            <span className="h-1 w-1 rounded-full bg-accent-coral animate-pulse" />
+          <div className="flex items-center gap-2 text-xs text-red animate-fade-in font-[family-name:var(--font-mono)] uppercase tracking-wider">
+            <span className="h-1 w-1 bg-red animate-pulse" />
             {error}
           </div>
         ) : null}
@@ -218,21 +208,21 @@ function BigBar({
     <div>
       <div className="mb-2 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full" style={{ backgroundColor: color, boxShadow: `0 0 8px ${color}60` }} />
-          <span className="text-sm font-medium text-text-primary">{label}</span>
+          <span className="h-2 w-2" style={{ backgroundColor: color, boxShadow: `0 0 10px ${color}60` }} />
+          <span className="text-sm font-semibold text-ink font-[family-name:var(--font-body)]">{label}</span>
         </div>
-        <span className={`tabular-nums text-lg font-bold font-[family-name:var(--font-rajdhani)] ${empty ? 'text-text-muted' : 'text-text-primary'}`}>
+        <span className={`tabular-nums text-2xl font-bold font-[family-name:var(--font-dharma)] ${empty ? 'text-ink-muted' : 'text-ink'}`}>
           {empty ? '—' : Math.round(value)}
         </span>
       </div>
-      <div className="h-2 w-full rounded-full bg-white/[0.05] overflow-hidden">
+      <div className="bar-track w-full">
         <div
-          className="h-full rounded-full transition-all duration-700 ease-out"
+          className="bar-fill"
           style={{
             width: `${value}%`,
             backgroundColor: color,
-            opacity: empty ? 0.15 : 1,
-            boxShadow: empty ? 'none' : `0 0 12px ${color}40, 0 0 24px ${color}20`,
+            opacity: empty ? 0.12 : 1,
+            boxShadow: empty ? 'none' : `0 0 16px ${color}40, 0 0 32px ${color}20`,
           }}
         />
       </div>
@@ -260,13 +250,13 @@ function Slider({
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span
-            className="h-2 w-2 rounded-full"
-            style={{ backgroundColor: color, boxShadow: `0 0 8px ${color}60` }}
+            className="h-2 w-2"
+            style={{ backgroundColor: color, boxShadow: `0 0 10px ${color}60` }}
           />
-          <span className="text-sm font-medium text-text-primary">{label}</span>
+          <span className="text-sm font-semibold text-ink font-[family-name:var(--font-body)]">{label}</span>
         </div>
         <span
-          className="tabular-nums text-sm font-bold font-[family-name:var(--font-rajdhani)]"
+          className="tabular-nums text-lg font-bold font-[family-name:var(--font-dharma)]"
           style={{ color }}
         >
           {value}
@@ -284,24 +274,24 @@ function Slider({
           className="w-full"
           style={{
             accentColor: color,
-            background: `linear-gradient(to right, ${color}40 0%, ${color}40 ${value}%, rgba(253,255,252,0.05) ${value}%, rgba(253,255,252,0.05) 100%)`,
+            background: `linear-gradient(to right, ${color}40 0%, ${color}40 ${value}%, rgba(242,242,242,0.05) ${value}%, rgba(242,242,242,0.05) 100%)`,
           }}
         />
       </div>
-      <div className="mt-1.5 flex justify-between text-[10px] text-text-muted uppercase tracking-wider">
+      <div className="mt-1.5 flex justify-between text-[10px] text-ink-muted font-[family-name:var(--font-mono)] uppercase tracking-wider">
         <span>0</span>
         <span>50</span>
         <span>100</span>
       </div>
-      <div className="mt-3 rounded-lg border border-border-subtle bg-surface-raised/50 p-3 text-xs leading-relaxed text-text-secondary">
+      <div className="mt-3 border border-stroke bg-bg-raised p-3 text-xs leading-relaxed text-ink-dim">
         <p className="mb-1.5">
-          <span className="font-medium text-text-muted">What it tests:</span> {details.what}
+          <span className="font-semibold text-ink-muted uppercase tracking-wider text-[10px]">What it tests:</span> {details.what}
         </p>
         <p className="mb-1.5">
-          <span className="font-medium text-text-muted">Cheat test:</span> {details.cheat}
+          <span className="font-semibold text-ink-muted uppercase tracking-wider text-[10px]">Cheat test:</span> {details.cheat}
         </p>
         <p>
-          <span className="font-medium text-text-muted">High-score examples:</span> {details.games}
+          <span className="font-semibold text-ink-muted uppercase tracking-wider text-[10px]">High-score examples:</span> {details.games}
         </p>
       </div>
     </div>

@@ -6,21 +6,21 @@ import { HelpCircle, X } from 'lucide-react';
 const EXAMPLES = [
   {
     axis: 'Execution',
-    color: '#2ec4b6',
+    color: '#d5ff00',
     what: 'Aim, timing, movement, muscle memory, inputs.',
     cheat: 'Aimbot / perfect inputs every time',
     games: 'Osu!, Tetris, Quake, Geometry Dash, Smash Melee',
   },
   {
     axis: 'Information',
-    color: '#ef767a',
+    color: '#00f0ff',
     what: 'Knowing things your opponent does not: hidden state, map awareness, economy tracking.',
     cheat: 'Wallhack / seeing hidden information',
     games: 'CS2 (info reads), Poker (hole cards), Hearthstone (deck tracking), StarCraft (scouting)',
   },
   {
     axis: 'Mental',
-    color: '#7d53de',
+    color: '#ff2a00',
     what: 'Reading people, adapting on the fly, managing variance, long-term strategy, tilt control.',
     cheat: 'Seeing the future / perfect reads every time',
     games: 'Poker, Chess, Dota 2, League of Legends, Fighting Games (mind games)',
@@ -35,7 +35,7 @@ export default function ScoringGuide() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-text-muted hover:text-text-primary hover:bg-surface-raised transition-colors border border-transparent hover:border-border-subtle"
+        className="btn py-2 px-3"
         aria-label="Open scoring guide"
       >
         <HelpCircle className="h-3.5 w-3.5" />
@@ -49,23 +49,22 @@ export default function ScoringGuide() {
             if (e.target === e.currentTarget) setOpen(false);
           }}
         >
-          {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-bg/90" />
 
-          <div className="relative w-full max-w-2xl rounded-2xl border border-border-default bg-surface p-6 sm:p-8 shadow-2xl">
-            <div className="mb-6 flex items-start justify-between">
+          <div className="relative w-full max-w-2xl border border-stroke bg-panel p-6 sm:p-8 shadow-[8px_8px_0_rgba(0,0,0,0.5)]">
+            <div className="mb-6 flex items-start justify-between border-b border-stroke pb-3">
               <div>
-                <h2 className="font-[family-name:var(--font-rajdhani)] text-xl font-bold tracking-wide text-text-primary">
+                <h2 className="font-[family-name:var(--font-dharma)] text-3xl font-normal uppercase tracking-wide text-ink">
                   How to Score Games
                 </h2>
-                <p className="mt-1 text-sm text-text-secondary">
+                <p className="mt-1 text-sm text-ink-dim font-[family-name:var(--font-mono)] uppercase tracking-wider">
                   Rate each game from 0 to 100 on three independent axes.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="shrink-0 rounded-lg p-1.5 text-text-muted hover:text-text-primary hover:bg-surface-raised transition-colors border border-transparent hover:border-border-subtle"
+                className="btn p-2"
                 aria-label="Close guide"
               >
                 <X className="h-4 w-4" />
@@ -76,26 +75,26 @@ export default function ScoringGuide() {
               {EXAMPLES.map((ex) => (
                 <div
                   key={ex.axis}
-                  className="rounded-xl border border-border-subtle bg-surface-raised/50 p-5"
+                  className="border border-stroke bg-bg-raised p-4 notch-left"
                 >
                   <div className="mb-3 flex items-center gap-2.5">
                     <span
-                      className="h-2.5 w-2.5 rounded-full shrink-0"
-                      style={{ backgroundColor: ex.color, boxShadow: `0 0 8px ${ex.color}60` }}
+                      className="h-2.5 w-2.5 shrink-0"
+                      style={{ backgroundColor: ex.color, boxShadow: `0 0 10px ${ex.color}60` }}
                     />
-                    <span className="text-sm font-bold font-[family-name:var(--font-rajdhani)] uppercase tracking-wider" style={{ color: ex.color }}>
+                    <span className="text-sm font-bold font-[family-name:var(--font-dharma)] uppercase tracking-wider" style={{ color: ex.color }}>
                       {ex.axis}
                     </span>
                   </div>
-                  <div className="space-y-2 text-sm text-text-secondary leading-relaxed">
+                  <div className="space-y-2 text-sm text-ink-dim leading-relaxed">
                     <p>
-                      <span className="text-text-muted font-medium">What it tests:</span> {ex.what}
+                      <span className="text-ink-muted font-semibold uppercase tracking-wider text-[10px]">What it tests:</span> {ex.what}
                     </p>
                     <p>
-                      <span className="text-text-muted font-medium">Cheat test:</span> {ex.cheat}
+                      <span className="text-ink-muted font-semibold uppercase tracking-wider text-[10px]">Cheat test:</span> {ex.cheat}
                     </p>
                     <p>
-                      <span className="text-text-muted font-medium">High-score examples:</span> {ex.games}
+                      <span className="text-ink-muted font-semibold uppercase tracking-wider text-[10px]">High-score examples:</span> {ex.games}
                     </p>
                   </div>
                 </div>

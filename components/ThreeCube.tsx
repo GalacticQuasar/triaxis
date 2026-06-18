@@ -8,9 +8,9 @@ import CubeStatsCard from './CubeStatsCard';
 import * as THREE from 'three';
 import { Game, Vote } from '@/lib/db';
 
-const COLOR_EXEC = new THREE.Color(0x2ec4b6);
-const COLOR_INFO = new THREE.Color(0xef767a);
-const COLOR_MENTAL = new THREE.Color(0x7d53de);
+const COLOR_EXEC = new THREE.Color(0xd5ff00);
+const COLOR_INFO = new THREE.Color(0x00f0ff);
+const COLOR_MENTAL = new THREE.Color(0xff2a00);
 const COLOR_WHITE = new THREE.Color(0xffffff);
 
 const VOTE_ANIMATION_DURATION_SECONDS = 0.75;
@@ -185,7 +185,7 @@ function VoteCluster({
   );
 }
 
-const COLOR_GRAY = new THREE.Color(0x4a5568);
+const COLOR_GRAY = new THREE.Color(0x3a3a3a);
 
 function GameDot({
   game,
@@ -282,7 +282,7 @@ function GameDot({
             labelMatRef.current = mat instanceof THREE.MeshBasicMaterial ? mat : null;
           }}
           fontSize={0.24}
-          color="#8daab8"
+          color="#8c8c8c"
           anchorX="center"
           anchorY="top"
           visible={true}
@@ -332,7 +332,7 @@ function GradientAxisLines() {
 }
 
 function Axes() {
-  const color = '#1a3a4a';
+  const color = '#262626';
   const lines: [THREE.Vector3, THREE.Vector3][] = [
     [new THREE.Vector3(-5, -5, -5), new THREE.Vector3(5, -5, -5)],
     [new THREE.Vector3(-5, -5, -5), new THREE.Vector3(-5, 5, -5)],
@@ -358,7 +358,7 @@ function Axes() {
       <Text
         position={[5.8, -5, -5]}
         fontSize={0.4}
-        color="#2ec4b6"
+        color="#d5ff00"
         anchorX="left"
       >
         Execution (X)
@@ -366,7 +366,7 @@ function Axes() {
       <Text
         position={[-5, 5.8, -5]}
         fontSize={0.4}
-        color="#ef767a"
+        color="#00f0ff"
         anchorX="center"
         anchorY="bottom"
       >
@@ -375,7 +375,7 @@ function Axes() {
       <Text
         position={[-5, -5, 5.8]}
         fontSize={0.4}
-        color="#7d53de"
+        color="#ff2a00"
         anchorX="center"
         anchorY="bottom"
       >
@@ -417,7 +417,6 @@ export default function ThreeCube({
         prev.some((g) => g.id === selectedGame.id) ? prev : [...prev, selectedGame]
       );
     }
-    // If this game is currently animating out, cancel that exit so it can re-enter cleanly.
     setExitingGames((prev) => prev.filter((g) => g.id !== game.id));
     setSelectedGame(game);
   }
@@ -441,13 +440,13 @@ export default function ThreeCube({
         camera={{ position: [12, 12, 12], fov: 50 }}
         onPointerMissed={deselect}
       >
-        <color attach="background" args={['#011627']} />
-        <fog attach="fog" args={['#011627', 15, 35]} />
+        <color attach="background" args={['#050505']} />
+        <fog attach="fog" args={['#050505', 15, 35]} />
         <ambientLight intensity={0.4} />
         <pointLight position={[10, 10, 10]} intensity={0.8} color="#ffffff" />
-        <pointLight position={[-10, -5, -5]} intensity={0.3} color="#2ec4b6" />
-        <pointLight position={[5, 10, -5]} intensity={0.3} color="#ef767a" />
-        <pointLight position={[-5, -10, 10]} intensity={0.3} color="#7d53de" />
+        <pointLight position={[-10, -5, -5]} intensity={0.3} color="#d5ff00" />
+        <pointLight position={[5, 10, -5]} intensity={0.3} color="#00f0ff" />
+        <pointLight position={[-5, -10, 10]} intensity={0.3} color="#ff2a00" />
 
         <Axes />
         {gamesWithVotes.map((game) => (
@@ -484,34 +483,25 @@ export default function ThreeCube({
       </Canvas>
 
       {hoveredGame ? (
-        <div className="pointer-events-none absolute left-4 top-4 rounded-xl border border-border-default bg-background/90 px-5 py-4 text-sm shadow-2xl backdrop-blur-xl animate-fade-in">
-          <div className="font-semibold text-text-primary text-base">
+        <div className="pointer-events-none absolute left-4 top-4 border border-stroke bg-bg/95 px-4 py-3 text-sm animate-fade-in z-20">
+          <div className="font-[family-name:var(--font-dharma)] text-lg font-normal uppercase text-ink leading-none">
             {hoveredGame.name}
           </div>
-          <div className="mt-2 flex items-center gap-3 text-xs">
+          <div className="mt-2 flex items-center gap-3 text-xs font-[family-name:var(--font-mono)] uppercase tracking-wider">
             <span className="flex items-center gap-1">
-              <span
-                className="h-1.5 w-1.5 rounded-full"
-                style={{ backgroundColor: '#2ec4b6' }}
-              />
+              <span className="h-1.5 w-1.5 bg-acid" />
               Exec {Math.round(hoveredGame.exec_avg)}
             </span>
             <span className="flex items-center gap-1">
-              <span
-                className="h-1.5 w-1.5 rounded-full"
-                style={{ backgroundColor: '#ef767a' }}
-              />
+              <span className="h-1.5 w-1.5 bg-cyan" />
               Info {Math.round(hoveredGame.info_avg)}
             </span>
             <span className="flex items-center gap-1">
-              <span
-                className="h-1.5 w-1.5 rounded-full"
-                style={{ backgroundColor: '#7d53de' }}
-              />
+              <span className="h-1.5 w-1.5 bg-red" />
               Mental {Math.round(hoveredGame.mental_avg)}
             </span>
           </div>
-          <div className="mt-1 text-[11px] text-text-muted">
+          <div className="mt-1 text-[11px] text-ink-muted font-[family-name:var(--font-mono)] uppercase tracking-wider">
             {hoveredGame.vote_count} vote
             {hoveredGame.vote_count === 1 ? '' : 's'}
           </div>
@@ -526,17 +516,17 @@ export default function ThreeCube({
         />
       ) : null}
 
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-[11px] text-text-muted flex items-center gap-4">
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-[11px] text-ink-muted flex items-center gap-4 font-[family-name:var(--font-mono)] uppercase tracking-wider">
         <span className="flex items-center gap-1.5">
           <Move size={12} />
           Drag to rotate
         </span>
-        <span className="h-1 w-1 rounded-full bg-border-default" />
+        <span className="h-2 w-px bg-stroke" />
         <span className="flex items-center gap-1.5">
           <ZoomIn size={12} />
           Scroll to zoom
         </span>
-        <span className="h-1 w-1 rounded-full bg-border-default" />
+        <span className="h-2 w-px bg-stroke" />
         <span className="flex items-center gap-1.5">
           <MousePointerClick size={12} />
           Click a dot to expand votes
@@ -548,26 +538,26 @@ export default function ThreeCube({
           const next = !showLabels;
           setShowLabels(next);
           if (typeof window !== 'undefined') {
-          if (!mountedRef.current) {
-            mountedRef.current = true;
-            const saved = localStorage.getItem('triaxis.showLabels');
-            if (saved === 'false') {
-              setShowLabels(false);
+            if (!mountedRef.current) {
+              mountedRef.current = true;
+              const saved = localStorage.getItem('triaxis.showLabels');
+              if (saved === 'false') {
+                setShowLabels(false);
+              }
             }
+            localStorage.setItem('triaxis.showLabels', String(next));
           }
-          localStorage.setItem('triaxis.showLabels', String(next));
-        }
         }}
-        className="absolute bottom-6 left-6 flex items-center gap-3 rounded-full border border-border-default bg-background/90 px-4 py-2 text-xs font-medium text-text-secondary shadow-2xl backdrop-blur-xl transition-all hover:text-text-primary hover:border-text-secondary/30"
+        className="absolute bottom-6 left-6 flex items-center gap-3 border border-stroke bg-bg/95 px-3 py-2 text-[11px] font-semibold text-ink-dim font-[family-name:var(--font-mono)] uppercase tracking-wider transition-all hover:text-acid hover:border-acid"
         aria-pressed={showLabels}
       >
         <span
-          className={`relative h-5 w-9 rounded-full transition-colors ${
-            showLabels ? 'bg-accent-sea' : 'bg-surface-raised'
+          className={`relative h-4 w-8 border border-stroke transition-colors ${
+            showLabels ? 'bg-acid' : 'bg-bg-raised'
           }`}
         >
           <span
-            className={`absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${
+            className={`absolute top-0.5 left-0.5 h-2.5 w-2.5 bg-ink transition-transform ${
               showLabels ? 'translate-x-4' : 'translate-x-0'
             }`}
           />

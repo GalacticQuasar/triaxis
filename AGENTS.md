@@ -19,6 +19,7 @@ Triaxis is a web platform where competitive gamers rate games on three independe
 | Framework | Next.js 16 (App Router) |
 | Language | TypeScript |
 | Styling | Tailwind CSS v4 |
+| Typography | Bebas Neue (display), Chakra Petch (body), JetBrains Mono (data/labels) |
 | Database | SQLite (`better-sqlite3`) |
 | 3D Viz | React Three Fiber + Drei |
 | Icons | `lucide-react` |
@@ -43,9 +44,9 @@ npm run lint     # ESLint
 
 ```
 app/
-  layout.tsx              # Root layout, dark mode, nav
+  layout.tsx              # Root layout: nav, typography/font vars, scanline/noise overlays
   page.tsx                # Game catalog grid (home)
-  globals.css             # Tailwind v4 theme tokens & utilities
+  globals.css             # Tailwind v4 theme tokens, utilities, & custom range input
   favicon.ico
   _components/
     Footer.tsx            # Client footer (hidden on /cube)
@@ -67,6 +68,20 @@ lib/
 public/
   placeholder-cover.svg   # Default Next.js placeholder assets (file/globe/window.svg)
 ```
+
+## Visual System
+
+The current UI is a **techno-grunge** aesthetic.
+
+- **Palette**: near-black `#050505` background, asphalt panels `#0e0e0e`, acid yellow `#d5ff00`, hot red `#ff2a00`, cyan `#00f0ff`.
+- **Axes mapping**: Execution = acid yellow, Information = cyan, Mental = hot red.
+- **Surfaces**: hard-edged, clipped-corner panels via `.grunge-card`; use borders (`border-stroke`) instead of shadows/blur.
+- **Texture**: fixed `scanlines` + heavy `noise-overlay` layers sit above the page; do not remove them.
+- **Typography**: Bebas Neue for all display/headlines, Chakra Petch for body, JetBrains Mono for data/labels/badges.
+- **Bars**: `.bar-track` / `.bar-fill` for every data bar (community averages, game cards, sliders). No rounded progress bars.
+- **Buttons**: `.btn` base; `.btn-primary` for CTAs. Clipped corners, 1px borders, uppercase labels.
+- **Links**: `.glitch-link` for hover-underline nav style.
+- **Custom range inputs**: styled in `globals.css` — square track, square thumb, no rounded edges.
 
 ## Conventions
 

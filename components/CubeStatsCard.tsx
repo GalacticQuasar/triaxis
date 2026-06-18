@@ -6,9 +6,9 @@ import { Game, Vote } from '@/lib/db';
 import { ArrowUpRight, Sigma, TrendingUp, Activity } from 'lucide-react';
 
 const COLORS = {
-  exec: '#2ec4b6',
-  info: '#ef767a',
-  mental: '#7d53de',
+  exec: '#d5ff00',
+  info: '#00f0ff',
+  mental: '#ff2a00',
 };
 
 const METRICS = [
@@ -67,7 +67,7 @@ function MetricStripPlot({
   const dots = useMemo(() => {
     return stats.values.map((value, i) => ({
       x: padding + (value / 100) * (width - padding * 2),
-      y: height / 2 + (Math.sin(i * 12.5 + value) * 4), // deterministic jitter
+      y: height / 2 + (Math.sin(i * 12.5 + value) * 4),
       value,
     }));
   }, [stats.values]);
@@ -75,11 +75,11 @@ function MetricStripPlot({
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between text-xs">
-        <span className="flex items-center gap-1.5 font-medium text-text-secondary">
-          <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: color }} />
+        <span className="flex items-center gap-1.5 font-semibold text-ink font-[family-name:var(--font-body)]">
+          <span className="h-1.5 w-1.5" style={{ backgroundColor: color }} />
           {label}
         </span>
-        <div className="flex items-center gap-3 text-[11px] text-text-muted tabular-nums">
+        <div className="flex items-center gap-3 text-[11px] text-ink-muted tabular-nums font-[family-name:var(--font-mono)] uppercase tracking-wider">
           <span title="Average">
             μ {Math.round(stats.mean)}
           </span>
@@ -99,18 +99,16 @@ function MetricStripPlot({
         className="overflow-visible"
         preserveAspectRatio="none"
       >
-        {/* Track */}
         <line
           x1={padding}
           y1={trackY}
           x2={width - padding}
           y2={trackY}
-          stroke="rgba(253,255,252,0.08)"
+          stroke="rgba(242,242,242,0.08)"
           strokeWidth={2}
-          strokeLinecap="round"
+          strokeLinecap="square"
         />
 
-        {/* Vote dots */}
         {dots.map((dot, i) => (
           <circle
             key={i}
@@ -122,7 +120,6 @@ function MetricStripPlot({
           />
         ))}
 
-        {/* Average marker */}
         <line
           x1={padding + (gameAvg / 100) * (width - padding * 2)}
           y1={4}
@@ -136,15 +133,15 @@ function MetricStripPlot({
           cx={padding + (gameAvg / 100) * (width - padding * 2)}
           cy={trackY}
           r={3.5}
-          fill="#fdfffc"
+          fill="#f2f2f2"
           stroke={color}
           strokeWidth={2}
         />
       </svg>
 
-      <div className="flex justify-between text-[10px] text-text-muted tabular-nums">
+      <div className="flex justify-between text-[10px] text-ink-muted tabular-nums font-[family-name:var(--font-mono)] uppercase tracking-wider">
         <span>0</span>
-        <span className="text-text-secondary/70">
+        <span className="text-ink-dim">
           avg {Math.round(gameAvg)} {short}
         </span>
         <span>100</span>
@@ -165,11 +162,11 @@ function RankBadge({
   const pct = Math.round(percentile * 100);
   return (
     <div
-      className="flex flex-col rounded-lg border bg-surface/60 px-2.5 py-2"
+      className="flex flex-col border bg-bg-raised px-2.5 py-2"
       style={{ borderColor: color, borderWidth: 1 }}
     >
-      <span className="text-[10px] uppercase tracking-wider text-text-muted">{label}</span>
-      <span className="font-[family-name:var(--font-rajdhani)] text-lg font-semibold tabular-nums" style={{ color }}>
+      <span className="text-[10px] uppercase tracking-wider text-ink-muted font-[family-name:var(--font-mono)]">{label}</span>
+      <span className="font-[family-name:var(--font-dharma)] text-xl font-normal tabular-nums" style={{ color }}>
         Top {pct}%
       </span>
     </div>
@@ -235,20 +232,20 @@ export default function CubeStatsCard({
   ];
 
   return (
-    <div className="absolute right-4 top-4 max-h-[calc(100vh-120px)] w-80 select-none overflow-y-auto rounded-xl border border-border-default bg-background/90 px-5 py-5 text-sm shadow-2xl backdrop-blur-xl animate-fade-in custom-scrollbar">
-      <div className="mb-4 flex items-start justify-between gap-3">
+    <div className="absolute right-4 top-4 max-h-[calc(100vh-120px)] w-80 select-none overflow-y-auto border border-stroke bg-bg/95 px-4 py-4 text-sm animate-fade-in z-20">
+      <div className="mb-4 flex items-start justify-between gap-3 border-b border-stroke pb-3">
         <div className="select-text">
-          <h2 className="font-[family-name:var(--font-rajdhani)] text-lg font-semibold leading-tight text-text-primary">
+          <h2 className="font-[family-name:var(--font-dharma)] text-2xl font-normal leading-none text-ink">
             {game.name}
           </h2>
           {game.genre_tag ? (
-            <p className="mt-1 text-[11px] uppercase tracking-wider text-text-muted">
+            <p className="mt-1 text-[11px] uppercase tracking-wider text-ink-muted font-[family-name:var(--font-mono)]">
               {game.genre_tag}
             </p>
           ) : null}
         </div>
         <div
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border-default font-[family-name:var(--font-rajdhani)] text-xs font-bold tracking-wider"
+          className="flex h-9 w-9 shrink-0 items-center justify-center border border-stroke font-[family-name:var(--font-dharma)] text-xs font-normal tracking-wider"
           style={{
             background: `linear-gradient(135deg, ${dominantAxis.color}20, transparent)`,
             color: dominantAxis.color,
@@ -259,19 +256,19 @@ export default function CubeStatsCard({
       </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-border-default bg-surface/60 px-2.5 py-1 text-[11px] text-text-secondary">
+        <span className="tag">
           <Sigma size={11} />
           {votes.length} vote{votes.length === 1 ? '' : 's'}
         </span>
         <span
-          className="inline-flex items-center gap-1.5 rounded-full border border-border-default bg-surface/60 px-2.5 py-1 text-[11px]"
-          style={{ color: dominantAxis.color }}
+          className="tag"
+          style={{ color: dominantAxis.color, borderColor: dominantAxis.color }}
         >
           <TrendingUp size={11} />
           Strongest in {dominantAxis.label}
         </span>
         {isControversial ? (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-accent-coral/30 bg-accent-coral/10 px-2.5 py-1 text-[11px] text-accent-coral">
+          <span className="tag" style={{ color: COLORS.mental, borderColor: COLORS.mental }}>
             <Activity size={11} />
             Divisive
           </span>
@@ -301,7 +298,7 @@ export default function CubeStatsCard({
 
       <button
         onClick={() => router.push(`/game/${game.slug}`)}
-        className="group flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-text-primary px-3 py-2 text-xs font-medium text-background hover:bg-text-primary/90 transition-colors"
+        className="group flex w-full cursor-pointer items-center justify-center gap-1.5 btn btn-primary"
       >
         Open game page
         <ArrowUpRight size={12} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />

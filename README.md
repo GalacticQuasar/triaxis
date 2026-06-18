@@ -13,6 +13,7 @@ A platform for rating competitive games on three independent axes: **Execution**
 - **Framework:** Next.js 16 (App Router)
 - **Language:** TypeScript
 - **Styling:** Tailwind CSS v4
+- **Typography:** Bebas Neue (display), Chakra Petch (body), JetBrains Mono (data/labels)
 - **Database:** SQLite (`better-sqlite3`)
 - **3D Viz:** React Three Fiber + Drei
 - **Icons:** `lucide-react`
@@ -79,6 +80,6 @@ public/
 ## Notes
 
 - Anonymous voting with no deduplication (unlimited votes per person).
-- Vote averages update in real-time in the DB, but the UI requires a manual refresh to see changes.
+- On game detail pages, `VoteSliders` updates the Community Averages bars in place after a successful vote — no page reload required.
 - Games with **0 votes** show placeholder bars at 50% and a "Be the first to vote" message.
 - The 3D cube only displays dots for games that have received at least one vote.
