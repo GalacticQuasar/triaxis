@@ -165,8 +165,8 @@ function RankBadge({
   const pct = Math.round(percentile * 100);
   return (
     <div
-      className="flex flex-col rounded-lg border border-border-default bg-surface/60 px-2.5 py-2"
-      style={{ borderLeftColor: color, borderLeftWidth: 2 }}
+      className="flex flex-col rounded-lg border bg-surface/60 px-2.5 py-2"
+      style={{ borderColor: color, borderWidth: 1 }}
     >
       <span className="text-[10px] uppercase tracking-wider text-text-muted">{label}</span>
       <span className="font-[family-name:var(--font-rajdhani)] text-lg font-semibold tabular-nums" style={{ color }}>
@@ -235,9 +235,9 @@ export default function CubeStatsCard({
   ];
 
   return (
-    <div className="absolute right-4 top-4 max-h-[calc(100vh-120px)] w-80 overflow-y-auto rounded-xl border border-border-default bg-background/90 px-5 py-5 text-sm shadow-2xl backdrop-blur-xl animate-fade-in custom-scrollbar">
+    <div className="absolute right-4 top-4 max-h-[calc(100vh-120px)] w-80 select-none overflow-y-auto rounded-xl border border-border-default bg-background/90 px-5 py-5 text-sm shadow-2xl backdrop-blur-xl animate-fade-in custom-scrollbar">
       <div className="mb-4 flex items-start justify-between gap-3">
-        <div>
+        <div className="select-text">
           <h2 className="font-[family-name:var(--font-rajdhani)] text-lg font-semibold leading-tight text-text-primary">
             {game.name}
           </h2>
