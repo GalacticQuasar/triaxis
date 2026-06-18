@@ -54,9 +54,15 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
             </div>
 
             {/* Rotating mini data cube */}
-            <div className="relative h-64 sm:h-80 lg:h-96 w-full pointer-events-none">
-              <HeroCubeWithLabel games={games} votesByGameId={votesByGameId} />
-            </div>
+            <Link
+              href="/cube"
+              aria-label="Explore the 3D cube"
+              className="group relative block h-64 sm:h-80 lg:h-96 w-full cursor-pointer"
+            >
+              <div className="pointer-events-none absolute inset-0">
+                <HeroCubeWithLabel games={games} votesByGameId={votesByGameId} />
+              </div>
+            </Link>
           </div>
         </div>
       </section>
