@@ -35,8 +35,6 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
     );
   }
 
-  const empty = game.vote_count === 0;
-
   // Generate a deterministic gradient based on game name
   const nameSum = game.name.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
   const hue1 = (nameSum * 137.5) % 360;
@@ -79,86 +77,16 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
         </div>
       </div>
 
-      {/* Community Averages */}
-      <div className="mb-6 rounded-2xl glass-card p-6 lg:p-8"
-      >
-        <div className="flex items-center justify-between mb-5"
-        >
-          <h2 className="font-[family-name:var(--font-rajdhani)] text-sm font-semibold uppercase tracking-widest text-text-secondary"
-          >
-            Community Averages
-          </h2>
-          <div className="text-[11px] text-text-muted flex items-center gap-1.5"
-          >
-            {empty ? (
-              <>
-                <span className="h-1.5 w-1.5 rounded-full bg-accent-coral/60 animate-pulse" />
-                No votes yet
-              </>
-            ) : (
-              <>
-                <span className="h-1.5 w-1.5 rounded-full bg-accent-sea" />
-                {game.vote_count} vote{game.vote_count === 1 ? '' : 's'}
-              </>
-            )}
-          </div>
-        </div>
-
-        <div className="space-y-4"
-        >
-          <BigBar label="Execution" value={game.exec_avg} color="#2ec4b6" empty={empty} />
-          <BigBar label="Information" value={game.info_avg} color="#ef767a" empty={empty} />
-          <BigBar label="Mental" value={game.mental_avg} color="#7d53de" empty={empty} />
-        </div>
-      </div>
-
       <VoteSliders
         slug={game.slug}
         initialExec={Math.round(game.exec_avg)}
         initialInfo={Math.round(game.info_avg)}
         initialMental={Math.round(game.mental_avg)}
+        initialExecAvg={game.exec_avg}
+        initialInfoAvg={game.info_avg}
+        initialMentalAvg={game.mental_avg}
+        initialVoteCount={game.vote_count}
       />
-    </div>
-  );
-}
-
-function BigBar({
-  label,
-  value,
-  color,
-  empty,
-}: {
-  label: string;
-  value: number;
-  color: string;
-  empty?: boolean;
-}) {
-  return (
-    <div>
-      <div className="mb-2 flex items-center justify-between"
-      >
-        <div className="flex items-center gap-2"
-        >
-          <span className="h-2 w-2 rounded-full" style={{ backgroundColor: color, boxShadow: `0 0 8px ${color}60` }} />
-          <span className="text-sm font-medium text-text-primary">{label}</span>
-        </div>
-        <span className={`tabular-nums text-lg font-bold font-[family-name:var(--font-rajdhani)] ${empty ? 'text-text-muted' : 'text-text-primary'}`}
-        >
-          {empty ? '—' : Math.round(value)}
-        </span>
-      </div>
-      <div className="h-2 w-full rounded-full bg-white/[0.05] overflow-hidden"
-      >
-        <div
-          className="h-full rounded-full transition-all duration-700 ease-out"
-          style={{
-            width: `${value}%`,
-            backgroundColor: color,
-            opacity: empty ? 0.15 : 1,
-            boxShadow: empty ? 'none' : `0 0 12px ${color}40, 0 0 24px ${color}20`,
-          }}
-        />
-      </div>
     </div>
   );
 }

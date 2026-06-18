@@ -9,6 +9,8 @@ Triaxis is a web platform where competitive gamers rate games on three independe
 - **This is NOT standard Next.js.** We are on Next.js 16.2.9 with breaking changes. Read `node_modules/next/dist/docs/` before using unfamiliar APIs.
 - **Dynamic route `params` are Promises.** In `app/game/[slug]/page.tsx`, you **must** `await params` before destructuring.
 - **Server Actions (`"use server"`)** exist, but this POC uses traditional Route Handlers (`app/api/**/route.ts`) for simplicity.
+- **Averages are live client-side.** `VoteSliders` renders the Community Averages bars and owns them as state; on submit it reads the updated averages from the `/api/votes` POST response and animates the bars in place. Do not reintroduce a server-rendered averages block on the game detail page.
+- **On submit, scroll to the top before the bars animate.** `VoteSliders` calls `window.scrollTo({ top: 0, behavior: 'smooth' })` inside a `requestAnimationFrame` *after* `setSaving(true)`. The rAF deferral is load-bearing — calling it synchronously lets React's re-render cancel the smooth-scroll animation (verified experimentally). Do not inline the scroll before the state update. The scroll container is `documentElement`, not `body` (body is `overflow: hidden` via the flex layout), so `scrollIntoView` on a ref only partially scrolls; use `window.scrollTo` to reach the game title/header.
 
 ## Tech Stack
 
@@ -48,12 +50,12 @@ app/
   _components/
     Footer.tsx            # Client footer (hidden on /cube)
   cube/page.tsx           # Full-page 3D scatter plot
-  game/[slug]/page.tsx    # Game detail + voting
+  game/[slug]/page.tsx    # Game detail header (averages + voting now live in VoteSliders)
   api/games/route.ts      # GET list / single game
-  api/votes/route.ts      # POST anonymous vote
+  api/votes/route.ts      # POST anonymous vote — returns { success, game: {exec_avg, info_avg, mental_avg, vote_count} }
 components/
   GameCard.tsx            # Grid item with bars
-  VoteSliders.tsx         # Three colored sliders
+  VoteSliders.tsx         # Client component: Community Averages bars + three sliders. Owns averages as state and updates them from the POST response so bars animate without a reload.
   ScoringGuide.tsx        # Help modal for rating
   ThreeCube.tsx           # R3F Canvas + scene
   CubeStatsCard.tsx       # Rich stats panel shown on cube dot selection

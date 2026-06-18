@@ -21,7 +21,16 @@ export async function POST(request: Request) {
 
     insertVoteAndUpdate(game.id, Math.round(exec), Math.round(info), Math.round(mental));
 
-    return NextResponse.json({ success: true });
+    const updated = getGameBySlug(slug);
+    return NextResponse.json({
+      success: true,
+      game: {
+        exec_avg: updated?.exec_avg ?? game.exec_avg,
+        info_avg: updated?.info_avg ?? game.info_avg,
+        mental_avg: updated?.mental_avg ?? game.mental_avg,
+        vote_count: updated?.vote_count ?? game.vote_count,
+      },
+    });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     return NextResponse.json({ error: message }, { status: 500 });
