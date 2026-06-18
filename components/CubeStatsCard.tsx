@@ -1,9 +1,11 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Game, Vote } from '@/lib/db';
 import { ArrowUpRight, Sigma, TrendingUp } from 'lucide-react';
+
+const ANIMATION_TOTAL_MS = 1150;
 
 const COLORS = {
   exec: '#d5ff00',
@@ -184,6 +186,18 @@ export default function CubeStatsCard({
 }) {
   const router = useRouter();
 
+  const [animating, setAnimating] = useState(true);
+  useEffect(() => {
+    let active = true;
+    const timer = setTimeout(() => {
+      if (active) setAnimating(false);
+    }, ANIMATION_TOTAL_MS);
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [game.id]);
+
   const execStats = useMemo(
     () => calculateStats(votes.map((v) => v.exec_score)),
     [votes]
@@ -225,8 +239,16 @@ export default function CubeStatsCard({
   ];
 
   return (
-    <div className="absolute right-4 top-4 max-h-[calc(100vh-120px)] w-80 select-none overflow-y-auto border border-stroke bg-bg/95 px-4 py-4 text-sm animate-fade-in z-20">
-      <div className="mb-4 flex items-start justify-between gap-3 border-b border-stroke pb-3">
+    <div
+      className="absolute right-4 top-4 max-h-[calc(100vh-120px)] w-80 select-none border border-stroke bg-bg/95 px-4 py-4 text-sm z-20 animate-fade-in"
+      style={{
+        overflowY: animating ? 'hidden' : 'auto',
+      }}
+    >
+      <div
+        className="mb-4 flex items-start justify-between gap-3 border-b border-stroke pb-3 animate-fade-in-up"
+        style={{ animationDelay: '0.05s', animationFillMode: 'both' }}
+      >
         <div className="select-text">
           <h2 className="font-[family-name:var(--font-dharma)] text-2xl font-normal leading-none text-ink">
             {game.name}
@@ -238,17 +260,22 @@ export default function CubeStatsCard({
           ) : null}
         </div>
         <div
-          className="flex h-9 w-9 shrink-0 items-center justify-center border border-stroke font-[family-name:var(--font-dharma)] text-xs font-normal tracking-wider"
+          className="flex h-9 w-9 shrink-0 items-center justify-center border border-stroke font-[family-name:var(--font-dharma)] text-xs font-normal tracking-wider animate-fade-in-up"
           style={{
             background: `linear-gradient(135deg, ${dominantAxis.color}20, transparent)`,
             color: dominantAxis.color,
+            animationDelay: '0.10s',
+            animationFillMode: 'both',
           }}
         >
           {game.name.slice(0, 2).toUpperCase()}
         </div>
       </div>
 
-      <div className="mb-4 flex flex-wrap items-center gap-2">
+      <div
+        className="mb-4 flex flex-wrap items-center gap-2 animate-fade-in-up"
+        style={{ animationDelay: '0.15s', animationFillMode: 'both' }}
+      >
         <span className="tag">
           <Sigma size={11} />
           {votes.length} vote{votes.length === 1 ? '' : 's'}
@@ -263,33 +290,46 @@ export default function CubeStatsCard({
       </div>
 
       <div className="mb-5 space-y-4">
-        {statRows.map((row) =>
+        {statRows.map((row, i) =>
           row.stats ? (
-            <MetricStripPlot
+            <div
               key={row.key}
-              stats={row.stats}
-              color={row.color}
-              label={row.label}
-              short={row.short}
-              gameAvg={row.gameAvg}
-            />
+              className="animate-fade-in-up"
+              style={{ animationDelay: `${0.20 + i * 0.08}s`, animationFillMode: 'both' }}
+            >
+              <MetricStripPlot
+                stats={row.stats}
+                color={row.color}
+                label={row.label}
+                short={row.short}
+                gameAvg={row.gameAvg}
+              />
+            </div>
           ) : null
         )}
       </div>
 
-      <div className="mb-5 grid grid-cols-3 gap-2">
+      <div
+        className="mb-5 grid grid-cols-3 gap-2 animate-fade-in-up"
+        style={{ animationDelay: '0.48s', animationFillMode: 'both' }}
+      >
         <RankBadge label="Exec" percentile={ranks.exec} color={COLORS.exec} />
         <RankBadge label="Info" percentile={ranks.info} color={COLORS.info} />
         <RankBadge label="Mental" percentile={ranks.mental} color={COLORS.mental} />
       </div>
 
-      <button
-        onClick={() => router.push(`/game/${game.slug}`)}
-        className="group flex w-full cursor-pointer items-center justify-center gap-1.5 btn btn-primary"
+      <div
+        className="animate-fade-in-up"
+        style={{ animationDelay: '0.55s', animationFillMode: 'both' }}
       >
-        Open game page
-        <ArrowUpRight size={12} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-      </button>
+        <button
+          onClick={() => router.push(`/game/${game.slug}`)}
+          className="group flex w-full cursor-pointer items-center justify-center gap-1.5 btn btn-primary"
+        >
+          Open game page
+          <ArrowUpRight size={12} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+        </button>
+      </div>
     </div>
   );
 }

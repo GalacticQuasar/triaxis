@@ -510,6 +510,7 @@ export default function ThreeCube({
 
       {selectedGame ? (
         <CubeStatsCard
+          key={selectedGame.id}
           game={selectedGame}
           votes={votesByGameId[selectedGame.id] ?? []}
           allGames={games}
