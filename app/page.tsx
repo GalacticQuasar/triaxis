@@ -1,6 +1,7 @@
-import { getAllGames } from '@/lib/db';
+import { getAllGames, getVotesByGameId, Vote } from '@/lib/db';
 import { sortGames, SortKey } from '@/lib/utils';
 import GameCard from '@/components/GameCard';
+import HeroCubeWithLabel from '@/components/HeroCubeWithLabel';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
@@ -11,49 +12,49 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
 
   const games = sortGames(getAllGames(), sortKey);
 
+  const votesByGameId: Record<number, Vote[]> = {};
+  for (const game of games) {
+    votesByGameId[game.id] = getVotesByGameId(game.id);
+  }
+
   return (
     <div className="animate-fade-in">
       {/* Hero Section */}
       <section className="relative overflow-hidden border-b border-stroke bg-bg-raised">
         <div className="scan-streak" />
-        <div className="mx-auto max-w-6xl px-6 py-16 sm:py-24">
-          <div className="max-w-2xl">
-            <div className="mb-6 inline-flex items-center gap-2 border border-stroke bg-panel px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-ink-dim">
-              <span className="h-1.5 w-1.5 bg-acid animate-pulse" />
-              Community-Powered Rankings
+        <div className="mx-auto max-w-6xl px-6 py-16 sm:py-24 relative">
+          <div className="grid lg:grid-cols-[1.2fr_1fr] gap-8 items-center">
+            <div className="max-w-2xl">
+              <div className="mb-6 inline-flex items-center gap-2 border border-stroke bg-panel px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-ink-dim">
+                <span className="h-1.5 w-1.5 bg-acid animate-pulse" />
+                Community-Powered Rankings
+              </div>
+
+              <h1 className="font-[family-name:var(--font-dharma)] text-6xl sm:text-7xl lg:text-8xl font-normal uppercase tracking-tight text-ink leading-[0.9] mb-6">
+                Rate games on
+                <br />
+                <span className="text-acid">three axes</span>
+              </h1>
+              <p className="text-base sm:text-lg text-ink-dim max-w-lg leading-relaxed mb-8 font-[family-name:var(--font-body)]">
+                Execution. Information. Mental. Map competitive games in 3D space and discover
+                where your favorites stand.
+              </p>
+              <div className="flex items-center gap-4">
+                <a href="#catalog" className="btn btn-primary">
+                  Browse Catalog
+                </a>
+                <Link href="/cube" className="btn">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" strokeLinejoin="miter">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                  </svg>
+                  Explore 3D Cube
+                </Link>
+              </div>
             </div>
 
-            <h1 className="font-[family-name:var(--font-dharma)] text-6xl sm:text-7xl lg:text-8xl font-normal uppercase tracking-tight text-ink leading-[0.9] mb-6">
-              Rate games on
-              <br />
-              <span className="text-acid">three axes</span>
-            </h1>
-            <p className="text-base sm:text-lg text-ink-dim max-w-lg leading-relaxed mb-8 font-[family-name:var(--font-body)]">
-              Execution. Information. Mental. Map competitive games in 3D space and discover
-              where your favorites stand.
-            </p>
-            <div className="flex items-center gap-4">
-              <a href="#catalog" className="btn btn-primary">
-                Browse Catalog
-              </a>
-              <Link href="/cube" className="btn">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" strokeLinejoin="miter">
-                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                </svg>
-                Explore 3D Cube
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* Decorative glyph */}
-        <div className="absolute top-1/2 right-8 -translate-y-1/2 hidden lg:block pointer-events-none opacity-20">
-          <div className="relative w-56 h-56 rotate-3">
-            <div className="absolute inset-0 border border-acid/60" />
-            <div className="absolute inset-5 border border-cyan/40 rotate-45" />
-            <div className="absolute inset-12 border border-red/40" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="font-[family-name:var(--font-dharma)] text-[10rem] text-stroke leading-none">3D</span>
+            {/* Rotating mini data cube */}
+            <div className="relative h-64 sm:h-80 lg:h-96 w-full pointer-events-none">
+              <HeroCubeWithLabel games={games} votesByGameId={votesByGameId} />
             </div>
           </div>
         </div>
