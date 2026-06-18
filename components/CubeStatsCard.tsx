@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Game, Vote } from '@/lib/db';
-import { ArrowUpRight, Sigma, TrendingUp, Activity } from 'lucide-react';
+import { ArrowUpRight, Sigma, TrendingUp } from 'lucide-react';
 
 const COLORS = {
   exec: '#d5ff00',
@@ -218,13 +218,6 @@ export default function CubeStatsCard({
     return scores.reduce((max, s) => (s.value > max.value ? s : max), scores[0]);
   }, [game]);
 
-  const isControversial = useMemo(() => {
-    const stats = [execStats, infoStats, mentalStats].filter(Boolean) as MetricScores[];
-    if (stats.length === 0) return false;
-    const avgStdDev = stats.reduce((sum, s) => sum + s.stdDev, 0) / stats.length;
-    return avgStdDev > 18;
-  }, [execStats, infoStats, mentalStats]);
-
   const statRows = [
     { stats: execStats, ...METRICS[0], gameAvg: game.exec_avg, rank: ranks.exec },
     { stats: infoStats, ...METRICS[1], gameAvg: game.info_avg, rank: ranks.info },
@@ -267,12 +260,6 @@ export default function CubeStatsCard({
           <TrendingUp size={11} />
           Strongest in {dominantAxis.label}
         </span>
-        {isControversial ? (
-          <span className="tag" style={{ color: COLORS.mental, borderColor: COLORS.mental }}>
-            <Activity size={11} />
-            Divisive
-          </span>
-        ) : null}
       </div>
 
       <div className="mb-5 space-y-4">
