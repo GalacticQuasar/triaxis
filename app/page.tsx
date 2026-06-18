@@ -89,6 +89,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
               <Link
                 key={s.key}
                 href={`/?sort=${s.key}`}
+                scroll={false}
                 className={`rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
                   sortKey === s.key
                     ? 'bg-surface-raised border border-border-default text-text-primary shadow-sm'
