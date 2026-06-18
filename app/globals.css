@@ -70,21 +70,30 @@ body {
   outline-offset: 2px;
 }
 
-/* scrollbar — chunky raw utility */
+/* scrollbar — techno-grunge */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--color-bg);
-  border-left: 1px solid var(--color-stroke);
+  background:
+    repeating-linear-gradient(
+      45deg,
+      var(--color-bg) 0,
+      var(--color-bg) 4px,
+      var(--color-bg-raised) 4px,
+      var(--color-bg-raised) 8px
+    );
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--color-ink-muted);
-  border: 1px solid var(--color-bg);
+  background: var(--color-stroke-light);
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-acid);
+  box-shadow: 0 0 8px rgba(213, 255, 0, 0.4);
+}
+::-webkit-scrollbar-corner {
+  background: var(--color-bg);
 }
 
 /* JAGGED / GRUNGE CARDS */
