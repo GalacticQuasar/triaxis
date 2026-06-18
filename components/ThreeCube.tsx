@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useRef, useMemo, useEffect } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Text, Line, Billboard } from '@react-three/drei';
+import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { Move, ZoomIn, MousePointerClick } from 'lucide-react';
 import CubeStatsCard from './CubeStatsCard';
 import * as THREE from 'three';
@@ -294,6 +295,90 @@ function GameDot({
   );
 }
 
+const TARGET_LERP_SPEED = 0.04;
+const INITIAL_TARGET = new THREE.Vector3(0, 0, 0);
+const INITIAL_CAMERA = new THREE.Vector3(12, 12, 12);
+const INITIAL_DISTANCE = INITIAL_CAMERA.distanceTo(INITIAL_TARGET);
+const SELECTED_DISTANCE = INITIAL_DISTANCE * 0.6;
+const ZOOM_LERP_SPEED = 0.04;
+
+function CameraTarget({
+  target,
+}: {
+  target: THREE.Vector3 | null;
+}) {
+  const { camera } = useThree();
+  const controlsRef = useRef<OrbitControlsImpl>(null);
+  const current = useRef(new THREE.Vector3(0, 0, 0));
+  const desired = useMemo(() => (target ? target.clone() : new THREE.Vector3(0, 0, 0)), [target]);
+
+  const prevTarget = useRef<THREE.Vector3 | null>(null);
+  const resettingZoom = useRef(false);
+  const desiredDistance = useRef(INITIAL_DISTANCE);
+
+  useEffect(() => {
+    const controls = controlsRef.current;
+    if (!controls) return;
+    const onStart = () => {
+      resettingZoom.current = false;
+    };
+    controls.addEventListener('start', onStart);
+    return () => {
+      controls.removeEventListener('start', onStart);
+    };
+  }, []);
+
+  useFrame(() => {
+    const justSelected =
+      prevTarget.current === null && target !== null;
+    const justDeselected =
+      prevTarget.current !== null && target === null;
+    prevTarget.current = target;
+    if (justSelected) {
+      desiredDistance.current = SELECTED_DISTANCE;
+      resettingZoom.current = true;
+    }
+    if (justDeselected) {
+      desiredDistance.current = INITIAL_DISTANCE;
+      resettingZoom.current = true;
+    }
+
+    const prev = current.current.clone();
+    current.current.lerp(desired, TARGET_LERP_SPEED);
+    const delta = current.current.clone().sub(prev);
+    camera.position.add(delta);
+
+    if (resettingZoom.current) {
+      const controls = controlsRef.current;
+      const t = current.current;
+      const offset = camera.position.clone().sub(t);
+      const dist = offset.length();
+      if (dist !== 0) {
+        const easedDist = THREE.MathUtils.lerp(dist, desiredDistance.current, ZOOM_LERP_SPEED);
+        offset.multiplyScalar(easedDist / dist);
+        camera.position.copy(t.clone().add(offset));
+      }
+      if (controls) {
+        controls.target.copy(current.current);
+        controls.update();
+      }
+      if (Math.abs(dist - desiredDistance.current) < 0.01) resettingZoom.current = false;
+    } else {
+      const controls = controlsRef.current;
+      if (controls) {
+        controls.target.copy(current.current);
+        controls.update();
+      } else {
+        camera.lookAt(current.current);
+      }
+    }
+  });
+
+  return (
+    <OrbitControls ref={controlsRef} makeDefault />
+  );
+}
+
 function GradientAxisLines() {
   const group = useMemo(() => {
     const axes: [THREE.Vector3, THREE.Color][] = [
@@ -479,7 +564,7 @@ export default function ThreeCube({
           />
         ))}
 
-        <OrbitControls makeDefault />
+        <CameraTarget target={selectedGame ? avgToPosition(selectedGame) : null} />
       </Canvas>
 
       {hoveredGame ? (
