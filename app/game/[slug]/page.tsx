@@ -71,8 +71,8 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
           </span>
         </div>
         <div>
-          <span className="tag mb-2">{game.genre_tag || 'Unknown Genre'}</span>
-          <h1 className="text-2xl font-bold text-ink font-[family-name:var(--font-body)]">{game.name}</h1>
+          <h1 className="text-2xl font-bold text-ink font-[family-name:var(--font-body)] mb-2">{game.name}</h1>
+          <span className="tag">{game.genre_tag || 'Unknown Genre'}</span>
         </div>
       </div>
 
