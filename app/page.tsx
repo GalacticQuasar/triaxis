@@ -35,12 +35,12 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
               where your favorites stand.
             </p>
             <div className="flex items-center gap-4">
-              <Link
-                href="/?sort=votes"
+              <a
+                href="#catalog"
                 className="inline-flex items-center gap-2 rounded-lg bg-accent-sea/10 border border-accent-sea/30 px-5 py-2.5 text-sm font-semibold text-accent-sea hover:bg-accent-sea/20 transition-colors"
               >
                 Browse Catalog
-              </Link>
+              </a>
               <Link
                 href="/cube"
                 className="inline-flex items-center gap-2 rounded-lg border border-border-default px-5 py-2.5 text-sm font-semibold text-text-secondary hover:text-text-primary hover:border-border-default/80 transition-colors"
@@ -67,7 +67,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
       </section>
 
       {/* Catalog Section */}
-      <section className="mx-auto max-w-6xl px-6 py-10">
+      <section id="catalog" className="mx-auto max-w-6xl px-6 py-10 scroll-mt-16">
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="font-[family-name:var(--font-rajdhani)] text-xl font-semibold tracking-wide uppercase text-text-primary"
