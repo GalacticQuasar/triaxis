@@ -2,6 +2,7 @@ import { getAllGames, getVotesByGameId, Vote } from '@/lib/db';
 import { sortGames, SortKey } from '@/lib/utils';
 import GameCard from '@/components/GameCard';
 import HeroCubeWithLabel from '@/components/HeroCubeWithLabel';
+import SmoothScrollLink from '@/components/SmoothScrollLink';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
@@ -40,9 +41,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
                 where your favorites stand.
               </p>
               <div className="flex items-center gap-4">
-                <a href="#catalog" className="btn btn-primary">
+                <SmoothScrollLink href="#catalog" className="btn btn-primary">
                   Browse Catalog
-                </a>
+                </SmoothScrollLink>
                 <Link href="/cube" className="btn">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" strokeLinejoin="miter">
                     <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>

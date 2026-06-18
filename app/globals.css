@@ -1,9 +1,5 @@
 @import "tailwindcss";
 
-html {
-  scroll-behavior: smooth;
-}
-
 @theme inline {
   /* core techno-grunge palette */
   --color-bg: #050505;
