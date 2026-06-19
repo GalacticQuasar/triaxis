@@ -205,7 +205,8 @@ function GameDot({
   const [hovered, setHovered] = useState(false);
   const baseColor = useMemo(() => gameColor(game), [game]);
   const isDimmed = selectedId !== null && selectedId !== game.id;
-  const labelVisible = showLabel && (selectedId === null || selectedId === game.id);
+  const labelVisible =
+    showLabel && (selectedId === null || selectedId === game.id || hovered);
 
   const dotRef = useRef<THREE.Mesh>(null);
   const glowRef = useRef<THREE.Mesh>(null);
