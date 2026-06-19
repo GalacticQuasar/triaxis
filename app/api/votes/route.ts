@@ -1,8 +1,9 @@
-import { getGameBySlug, insertVoteAndUpdate } from '@/lib/db';
+import { ensureSchema, getGameBySlug, insertVoteAndUpdate } from '@/lib/db';
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
   try {
+    await ensureSchema();
     const body = await request.json();
     const { slug, exec, info, mental } = body;
 
@@ -14,14 +15,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Scores must be between 0 and 100' }, { status: 400 });
     }
 
-    const game = getGameBySlug(slug);
+    const game = await getGameBySlug(slug);
     if (!game) {
       return NextResponse.json({ error: 'Game not found' }, { status: 404 });
     }
 
-    insertVoteAndUpdate(game.id, Math.round(exec), Math.round(info), Math.round(mental));
+    await insertVoteAndUpdate(game.id, Math.round(exec), Math.round(info), Math.round(mental));
 
-    const updated = getGameBySlug(slug);
+    const updated = await getGameBySlug(slug);
     return NextResponse.json({
       success: true,
       game: {

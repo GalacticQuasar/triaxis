@@ -1,4 +1,4 @@
-import { getAllGames, getVotesByGameId, Vote } from '@/lib/db';
+import { ensureSchema, getAllGames, getAllVotesByGameId } from '@/lib/db';
 import { sortGames, SortKey } from '@/lib/utils';
 import GameCard from '@/components/GameCard';
 import HeroCubeWithLabel from '@/components/HeroCubeWithLabel';
@@ -8,15 +8,17 @@ import Link from 'next/link';
 export const dynamic = 'force-dynamic';
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ sort?: string }> }) {
+  await ensureSchema();
   const { sort } = await searchParams;
   const sortKey: SortKey = ['votes', 'exec', 'info', 'mental'].includes(sort as string) ? (sort as SortKey) : 'votes';
 
-  const games = sortGames(getAllGames(), sortKey);
+  // Parallel: games + all votes in 2 round-trips instead of 1 + N sequential.
+  const [games, votesByGameId] = await Promise.all([
+    getAllGames(),
+    getAllVotesByGameId(),
+  ]);
 
-  const votesByGameId: Record<number, Vote[]> = {};
-  for (const game of games) {
-    votesByGameId[game.id] = getVotesByGameId(game.id);
-  }
+  const sortedGames = sortGames(games, sortKey);
 
   return (
     <div className="animate-fade-in">
@@ -75,7 +77,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
               Game Catalog
             </h2>
             <p className="text-xs text-ink-muted mt-1 font-[family-name:var(--font-mono)] uppercase tracking-wider">
-              {games.length} games rated by the community
+              {sortedGames.length} games rated by the community
             </p>
           </div>
           <div className="flex items-center gap-1 text-sm border border-stroke bg-panel p-1">
@@ -102,7 +104,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
         </div>
 
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {games.map((game, i) => (
+          {sortedGames.map((game, i) => (
             <GameCard key={game.id} game={game} index={i} />
           ))}
         </div>

@@ -1,15 +1,15 @@
-import { getAllGames, getVotesByGameId, Vote } from '@/lib/db';
+import { ensureSchema, getAllGames, getAllVotesByGameId } from '@/lib/db';
 import ThreeCube from '@/components/ThreeCube';
 
 export const dynamic = 'force-dynamic';
 
 export default async function CubePage() {
-  const games = getAllGames();
-
-  const votesByGameId: Record<number, Vote[]> = {};
-  for (const game of games) {
-    votesByGameId[game.id] = getVotesByGameId(game.id);
-  }
+  await ensureSchema();
+  // Parallel: games + all votes in 2 round-trips instead of 1 + N sequential.
+  const [games, votesByGameId] = await Promise.all([
+    getAllGames(),
+    getAllVotesByGameId(),
+  ]);
 
   return <ThreeCube games={games} votesByGameId={votesByGameId} />;
 }

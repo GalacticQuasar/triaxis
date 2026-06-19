@@ -31,6 +31,8 @@ This file captures **non-obvious, load-bearing context** so a fresh agent doesn'
 - **Cube viz helpers are NOT shared by both cubes.** `components/cube-viz.tsx` exports size-parametrized `avgToPosition`/`voteToPosition`/`VoteCluster`/`ClusterDot`, but only `HeroCube` imports them (passing `size={5}`). `ThreeCube` has its own local hardcoded copies (size `10`/`-5..+5`). If you edit `cube-viz.tsx` expecting `ThreeCube` to pick up the change, it won't — update both, or unify them deliberately.
 - **Hero cube cycle + click wiring.** Cycle advancement uses the `setActiveIndex(prev => ...)` updater form (not a `let i` closure) to avoid the `react-hooks/set-state-in-effect` lint rule. In `app/page.tsx`, `HeroCubeWithLabel` is wrapped in a Next.js `<Link href="/cube">`; the inner container keeps `pointer-events-none` so the canvas doesn't capture clicks (the Link does) — do not remove `pointer-events-none` or the cube stops being clickable.
 - **The `/cube` camera is driven by `CameraTarget` in `ThreeCube.tsx`.** Two load-bearing traps: (1) The camera translates by the same per-frame delta as the `target` lerp so the cube's orientation stays fixed (only the rotation center moves) — do not move the target without also moving the camera, or the view will swing toward the new target. (2) Auto-zoom (to `SELECTED_DISTANCE` on select, back to `INITIAL_DISTANCE` on deselect) is gated behind a `resettingZoom` ref that is cleared on the OrbitControls `'start'` event (wheel/drag) so manual input is never fought — never let auto-zoom run unconditionally each frame.
+- **The DB is Turso (libSQL), not local SQLite.** All db helpers in `lib/db.ts` are `async` and go over the network; `await` them at every call site. There is no local file fallback and no `triaxis.db` — do not reintroduce `better-sqlite3`. Two load-bearing traps: (1) **libSQL rows are not plain objects** — `@libsql/client` returns rows as instances of an internal `Row` class, and Next.js RSC serialization rejects non-plain objects when passing them from Server to Client Components (error: "Only plain objects can be passed to Client Components…"). Every query helper in `lib/db.ts` spreads rows through `toPlain<T>()` to strip the prototype — any new query helper must do the same, or the page renders will throw. (2) **Never loop `getVotesByGameId` per game** — that's an N+1 over a remote DB and was the cause of multi-second page loads. Pages that need votes for all games use `getAllVotesByGameId()` (one round-trip, grouped in JS) and `Promise.all([getAllGames(), getAllVotesByGameId()])` to parallelize. `getVotesByGameId(gameId)` exists for single-game paths only.
+- **`ensureSchema()` is cached, do not bypass the cache.** It's backed by a module-level promise (`schemaPromise` in `lib/db.ts`) so the DDL round-trip runs once per server process, not per request. Calling `client.executeMultiple(...)` directly to "skip the wrapper" reintroduces a per-request round-trip. On failure the cache clears so the next request retries — preserve that `.catch` reset if you refactor.
 
 ## Tech Stack
 
@@ -40,29 +42,29 @@ This file captures **non-obvious, load-bearing context** so a fresh agent doesn'
 | Language | TypeScript |
 | Styling | Tailwind CSS v4 |
 | Typography | Bebas Neue (display), Chakra Petch (body), JetBrains Mono (data/labels) |
-| Database | SQLite (`better-sqlite3`) |
+| Database | Turso (libSQL, network SQLite) via `@libsql/client` |
 | 3D Viz | React Three Fiber + Drei |
 | Icons | `lucide-react` |
 
 ## Database
 
-- **File:** `triaxis.db` (gitignored)
-- **Schema & client:** `lib/db.ts`
-- **Seed script:** `lib/seed.ts`
-- **Reset:** Delete `triaxis.db`, then `npx tsx lib/seed.ts`
-- `better-sqlite3` has no bundled types. We ship a custom declaration file at `lib/better-sqlite3.d.ts`.
+- **Host:** Turso (libSQL — network-attached SQLite). Remote only; no local file fallback.
+- **Client & schema:** `lib/db.ts` (uses `@libsql/client`'s `createClient`). Schema bootstrap is `ensureSchema()`, cached via a module-level promise so it runs once per server process.
+- **Env vars (required):** `TURSO_DATABASE_URL` (e.g. `libsql://<db>-<org>.turso.io`) and `TURSO_AUTH_TOKEN` (a long-lived JWT). Set in `.env` locally (gitignored) and in the Vercel project settings for production.
+- **Seed script:** `lib/seed.ts` — inserts 10 games + 30 votes. Run with `npx tsx --env-file=.env lib/seed.ts` (`tsx` does not auto-load `.env`). The script calls `ensureSchema()` first, so it's safe to run against a fresh Turso DB.
+- **Reset:** Drop all rows in Turso (or drop & recreate the DB in the Turso dashboard), then re-run the seed script. `INSERT OR IGNORE` on games makes the seed idempotent for the games table, but re-running will duplicate votes — do a real reset first.
 
 ## Build & Dev
 
 ```bash
-npm run dev      # Turbopack dev server on :3000
-npm run build    # Production build (also runs TypeScript typecheck — there is no separate typecheck script)
-npm run lint     # ESLint
-npx tsx lib/seed.ts  # Seed/reseed the DB (run after deleting triaxis.db)
+npm run dev                          # Turbopack dev server on :3000 (loads .env automatically)
+npm run build                         # Production build (also runs TypeScript typecheck — there is no separate typecheck script)
+npm run lint                          # ESLint
+npx tsx --env-file=.env lib/seed.ts   # Seed/reseed the Turso DB (tsx doesn't auto-load .env)
 ```
 
 - **No test suite.** There are no test scripts or test files; verify changes with `npm run lint && npm run build`.
-- **`better-sqlite3` is in `serverExternalPackages`** (`next.config.ts`) so the native binding isn't bundled by Turbopack. Don't remove it or the build breaks.
+- **No `serverExternalPackages` config needed.** `@libsql/client` is pure JS and bundles fine with Turbopack; the old `better-sqlite3` native-binding exclusion was removed during the Turso migration.
 
 ## File Structure
 
@@ -90,10 +92,9 @@ components/
   GlitchText.tsx          # Per-character resolve-from-random glitch animation
   SmoothScrollLink.tsx    # Client `<a>` wrapper that smooth-scrolls to an in-page anchor via scrollIntoView (opt-in; no global scroll-behavior)
 lib/
-  db.ts                   # SQLite client, schema, helpers
-  seed.ts                 # Seed 10 games + 30 initial votes (3 per game)
+  db.ts                   # Turso (libSQL) async client, schema bootstrap (cached), query helpers, toPlain Row-stripping
+  seed.ts                 # Seed 10 games + 30 initial votes (3 per game); run with --env-file=.env
   utils.ts                # Sorting helpers
-  better-sqlite3.d.ts     # Type declarations
 public/
   placeholder-cover.svg   # Default Next.js placeholder assets (file/globe/window.svg)
 ```
@@ -116,4 +117,4 @@ The current UI is a **techno-grunge** aesthetic.
 
 - All pages that read from the DB export `const dynamic = 'force-dynamic'` to avoid stale data at build time.
 - Dark mode is **always on** via `className="dark"` on `<html>`.
-- No auth, no env vars, no external services.
+- No auth. Two env vars (`TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`) are required for the DB; Turso is the only external service.

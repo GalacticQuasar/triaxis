@@ -1,12 +1,13 @@
-import { getGameBySlug } from '@/lib/db';
+import { ensureSchema, getGameBySlug } from '@/lib/db';
 import VoteSliders from '@/components/VoteSliders';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
 export default async function GameDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  await ensureSchema();
   const { slug } = await params;
-  const game = getGameBySlug(slug);
+  const game = await getGameBySlug(slug);
 
   if (!game) {
     return (

@@ -1,4 +1,4 @@
-import { db, getGameBySlug, insertVoteAndUpdate } from './db';
+import { ensureSchema, getGameBySlug, insertVoteAndUpdate, client } from './db';
 
 const seedGames = [
   { slug: 'counter-strike-2', name: 'Counter-Strike 2', genre_tag: 'FPS / Tactical' },
@@ -221,30 +221,35 @@ const seedVotes: Record<
   ],
 };
 
-function seed() {
-  const insert = db.prepare(
-    'INSERT OR IGNORE INTO games (slug, name, genre_tag, cover_url, exec_avg, info_avg, mental_avg, vote_count) VALUES (?, ?, ?, ?, 50.0, 50.0, 50.0, 0)'
-  );
+async function seed() {
+  await ensureSchema();
 
   for (const game of seedGames) {
-    insert.run(game.slug, game.name, game.genre_tag, null);
+    await client.execute({
+      sql: 'INSERT OR IGNORE INTO games (slug, name, genre_tag, cover_url, exec_avg, info_avg, mental_avg, vote_count) VALUES (?, ?, ?, ?, 50.0, 50.0, 50.0, 0)',
+      args: [game.slug, game.name, game.genre_tag, null],
+    });
   }
 
   let voteCount = 0;
   for (const [slug, votes] of Object.entries(seedVotes)) {
-    const game = getGameBySlug(slug);
+    const game = await getGameBySlug(slug);
     if (!game) {
       console.warn('Could not find game for slug:', slug);
       continue;
     }
     for (const vote of votes) {
-      insertVoteAndUpdate(game.id, vote.exec, vote.info, vote.mental);
+      await insertVoteAndUpdate(game.id, vote.exec, vote.info, vote.mental);
       voteCount++;
     }
   }
 
   console.log('Seeded', seedGames.length, 'games');
   console.log('Seeded', voteCount, 'initial votes');
+  await client.close();
 }
 
-seed();
+seed().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});
