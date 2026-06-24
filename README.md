@@ -29,7 +29,7 @@ npm install
 #   TURSO_DATABASE_URL=libsql://<your-db>.turso.io
 #   TURSO_AUTH_TOKEN=eyJ...
 
-# Seed the database (10 games + 30 initial votes)
+# Seed the database (10 games + 100 votes: 1 hardcoded + 9 seeded-random per game)
 npx tsx --env-file=.env lib/seed.ts
 
 # Start the dev server (loads .env automatically)
@@ -45,12 +45,11 @@ Turso is remote-only — there is no local SQLite file fallback. The schema is b
 To reset:
 
 ```bash
-# Drop all rows in Turso (or drop & recreate the DB in the Turso dashboard),
-# then re-run the seed:
-npx tsx --env-file=.env lib/seed.ts
+# --wipe drops all votes + games and resets AUTOINCREMENT sequences before seeding
+npx tsx --env-file=.env lib/seed.ts --wipe
 ```
 
-`INSERT OR IGNORE` on the games table makes the seed idempotent for games, but re-running will duplicate votes — do a real reset first.
+Without `--wipe`, `INSERT OR IGNORE` on the games table makes the seed idempotent for games, but re-running will duplicate votes.
 
 ## Deployment
 
@@ -97,7 +96,7 @@ components/
   SmoothScrollLink.tsx    # Client <a> wrapper that smooth-scrolls to an in-page anchor
 lib/
   db.ts                   # Turso (libSQL) async client, schema, helpers
-  seed.ts                 # Seed 10 competitive games + 30 votes
+  seed.ts                 # Seed 10 competitive games + 100 votes (1 hardcoded + 9 seeded-random per game)
   utils.ts                # Sorting helpers
 public/
   placeholder-cover.svg   # Placeholder cover art (plus default Next.js assets)

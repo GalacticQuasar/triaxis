@@ -51,8 +51,8 @@ This file captures **non-obvious, load-bearing context** so a fresh agent doesn'
 - **Host:** Turso (libSQL — network-attached SQLite). Remote only; no local file fallback.
 - **Client & schema:** `lib/db.ts` (uses `@libsql/client`'s `createClient`). Schema bootstrap is `ensureSchema()`, cached via a module-level promise so it runs once per server process.
 - **Env vars (required):** `TURSO_DATABASE_URL` (e.g. `libsql://<db>-<org>.turso.io`) and `TURSO_AUTH_TOKEN` (a long-lived JWT). Set in `.env` locally (gitignored) and in the Vercel project settings for production.
-- **Seed script:** `lib/seed.ts` — inserts 10 games + 30 votes. Run with `npx tsx --env-file=.env lib/seed.ts` (`tsx` does not auto-load `.env`). The script calls `ensureSchema()` first, so it's safe to run against a fresh Turso DB.
-- **Reset:** Drop all rows in Turso (or drop & recreate the DB in the Turso dashboard), then re-run the seed script. `INSERT OR IGNORE` on games makes the seed idempotent for the games table, but re-running will duplicate votes — do a real reset first.
+- **Seed script:** `lib/seed.ts` — inserts 10 games + 100 votes (1 hardcoded + 9 seeded-random per game). Run with `npx tsx --env-file=.env lib/seed.ts` (`tsx` does not auto-load `.env`). Pass `--wipe` to delete all rows before seeding: `npx tsx --env-file=.env lib/seed.ts --wipe`. The script calls `ensureSchema()` first, so it's safe to run against a fresh Turso DB.
+- **Reset:** Run the seed script with `--wipe` (drops all votes + games + resets AUTOINCREMENT sequences), or drop & recreate the DB in the Turso dashboard. Without `--wipe`, `INSERT OR IGNORE` on games is idempotent for the games table but re-running will duplicate votes.
 
 ## Build & Dev
 
