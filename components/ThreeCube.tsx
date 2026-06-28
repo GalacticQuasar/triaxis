@@ -4,7 +4,7 @@ import { useState, useRef, useMemo, useEffect, useCallback } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Text, Line, Billboard } from '@react-three/drei';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
-import { Move, ZoomIn, MousePointerClick, Search } from 'lucide-react';
+import { Move, ZoomIn, MousePointerClick, Search, ArrowDown } from 'lucide-react';
 import CubeStatsCard from './CubeStatsCard';
 import * as THREE from 'three';
 import { Game, Vote } from '@/lib/db';
@@ -699,6 +699,11 @@ export default function ThreeCube({
         <span className="flex items-center gap-1.5">
           <MousePointerClick size={12} />
           Click a dot to expand votes
+        </span>
+        <span className="h-2 w-px bg-stroke" />
+        <span className="flex items-center gap-1.5">
+          <ArrowDown size={12} />
+          Arrow keys to navigate
         </span>
       </div>
 
