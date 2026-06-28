@@ -376,7 +376,7 @@ function CameraTarget({
   });
 
   return (
-    <OrbitControls ref={controlsRef} makeDefault />
+    <OrbitControls ref={controlsRef} makeDefault enablePan={false} />
   );
 }
 
