@@ -1,6 +1,6 @@
 import { ensureSchema, getAllGames, getAllVotesByGameId } from '@/lib/db';
 import { sortGames, SortKey } from '@/lib/utils';
-import GameCard from '@/components/GameCard';
+import CatalogSearch from '@/components/CatalogSearch';
 import HeroCubeWithLabel from '@/components/HeroCubeWithLabel';
 import SmoothScrollLink from '@/components/SmoothScrollLink';
 import Link from 'next/link';
@@ -103,11 +103,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
           </div>
         </div>
 
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {sortedGames.map((game, i) => (
-            <GameCard key={game.id} game={game} index={i} />
-          ))}
-        </div>
+        <CatalogSearch games={sortedGames} />
       </section>
     </div>
   );
