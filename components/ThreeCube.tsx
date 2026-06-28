@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useRef, useMemo, useEffect } from 'react';
+import { useState, useRef, useMemo, useEffect, useCallback } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Text, Line, Billboard } from '@react-three/drei';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
-import { Move, ZoomIn, MousePointerClick } from 'lucide-react';
+import { Move, ZoomIn, MousePointerClick, Search } from 'lucide-react';
 import CubeStatsCard from './CubeStatsCard';
 import * as THREE from 'three';
 import { Game, Vote } from '@/lib/db';
@@ -194,19 +194,22 @@ function GameDot({
   onSelect,
   showLabel,
   selectedId,
+  hoveredId,
 }: {
   game: Game;
   onHover: (game: Game | null) => void;
   onSelect: (game: Game) => void;
   showLabel: boolean;
   selectedId: number | null;
+  hoveredId: number | null;
 }) {
   const position = useMemo(() => avgToPosition(game), [game]);
   const [hovered, setHovered] = useState(false);
   const baseColor = useMemo(() => gameColor(game), [game]);
   const isDimmed = selectedId !== null && selectedId !== game.id;
+  const isHovered = hovered || hoveredId === game.id;
   const labelVisible =
-    showLabel && (selectedId === null || selectedId === game.id || hovered);
+    showLabel && (selectedId === null || selectedId === game.id || isHovered);
 
   const dotRef = useRef<THREE.Mesh>(null);
   const glowRef = useRef<THREE.Mesh>(null);
@@ -214,9 +217,9 @@ function GameDot({
   const labelRef = useRef<THREE.Mesh | null>(null);
   const labelMatRef = useRef<THREE.MeshBasicMaterial | null>(null);
 
-  const dotTarget = useMemo(() => new THREE.Vector3(hovered ? 1.4 : 1, hovered ? 1.4 : 1, hovered ? 1.4 : 1), [hovered]);
-  const glowTarget = useMemo(() => new THREE.Vector3(hovered ? 1 : 0, hovered ? 1 : 0, hovered ? 1 : 0), [hovered]);
-  const opacityTarget = hovered ? 0.15 : 0;
+  const dotTarget = useMemo(() => new THREE.Vector3(isHovered ? 1.4 : 1, isHovered ? 1.4 : 1, isHovered ? 1.4 : 1), [isHovered]);
+  const glowTarget = useMemo(() => new THREE.Vector3(isHovered ? 1 : 0, isHovered ? 1 : 0, isHovered ? 1 : 0), [isHovered]);
+  const opacityTarget = isHovered ? 0.15 : 0;
   const labelOpacityTarget = labelVisible ? 1 : 0;
   const LABEL_FADE_SPEED = 0.08;
 
@@ -259,7 +262,7 @@ function GameDot({
         <meshStandardMaterial
           color={isDimmed ? COLOR_GRAY : COLOR_WHITE}
           emissive={isDimmed ? COLOR_GRAY : baseColor}
-          emissiveIntensity={hovered ? 1.5 : 0.7}
+          emissiveIntensity={isHovered ? 1.5 : 0.7}
           roughness={0.2}
           metalness={0.8}
         />
@@ -479,46 +482,88 @@ export default function ThreeCube({
   games: Game[];
   votesByGameId: Record<number, Vote[]>;
 }) {
-  const [hoveredGame, setHoveredGame] = useState<Game | null>(null);
+  const [hoveredId, setHoveredId] = useState<number | null>(null);
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
   const [exitingGames, setExitingGames] = useState<Game[]>([]);
   const [showLabels, setShowLabels] = useState(true);
+  const [search, setSearch] = useState('');
   const mountedRef = useRef(false);
 
   const gamesWithVotes = games.filter((g) => g.vote_count > 0);
 
-  function selectGame(game: Game) {
-    if (selectedGame?.id === game.id) {
-      if (selectedGame) {
-        setExitingGames((prev) =>
-          prev.some((g) => g.id === selectedGame.id) ? prev : [...prev, selectedGame]
+  const filteredGames = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return gamesWithVotes;
+    return gamesWithVotes.filter(
+      (g) =>
+        g.name.toLowerCase().includes(q) ||
+        (g.genre_tag && g.genre_tag.toLowerCase().includes(q))
+    );
+  }, [search, gamesWithVotes]);
+
+  const selectGame = useCallback((game: Game) => {
+    setSelectedGame((prev) => {
+      if (prev?.id === game.id) {
+        if (prev) {
+          setExitingGames((p) =>
+            p.some((g) => g.id === prev.id) ? p : [...p, prev]
+          );
+        }
+        return null;
+      }
+      if (prev) {
+        setExitingGames((p) =>
+          p.some((g) => g.id === prev.id) ? p : [...p, prev]
         );
       }
-      setSelectedGame(null);
-      return;
-    }
+      setExitingGames((p) => p.filter((g) => g.id !== game.id));
+      return game;
+    });
+  }, []);
 
-    if (selectedGame) {
-      setExitingGames((prev) =>
-        prev.some((g) => g.id === selectedGame.id) ? prev : [...prev, selectedGame]
-      );
-    }
-    setExitingGames((prev) => prev.filter((g) => g.id !== game.id));
-    setSelectedGame(game);
-  }
-
-  function deselect() {
-    if (selectedGame) {
-      setExitingGames((prev) =>
-        prev.some((g) => g.id === selectedGame.id) ? prev : [...prev, selectedGame]
-      );
-    }
-    setSelectedGame(null);
-  }
+  const deselect = useCallback(() => {
+    setSelectedGame((prev) => {
+      if (prev) {
+        setExitingGames((p) =>
+          p.some((g) => g.id === prev.id) ? p : [...p, prev]
+        );
+      }
+      return null;
+    });
+  }, []);
 
   function removeExiting(gameId: number) {
     setExitingGames((prev) => prev.filter((g) => g.id !== gameId));
   }
+
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      const el = document.activeElement;
+      if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) return;
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        deselect();
+        return;
+      }
+      if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+      e.preventDefault();
+      const list = filteredGames;
+      if (list.length === 0) return;
+      const currentIndex = selectedGame ? list.findIndex((g) => g.id === selectedGame.id) : -1;
+      const isNext = e.key === 'ArrowDown' || e.key === 'ArrowRight';
+      const newIndex =
+        currentIndex === -1
+          ? isNext
+            ? 0
+            : list.length - 1
+          : isNext
+            ? (currentIndex + 1) % list.length
+            : (currentIndex - 1 + list.length) % list.length;
+      selectGame(list[newIndex]);
+    }
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [filteredGames, selectedGame, selectGame, deselect]);
 
   return (
     <div className="relative h-[calc(100vh-64px)] w-full animate-fade-in">
@@ -539,10 +584,11 @@ export default function ThreeCube({
           <GameDot
             key={game.id}
             game={game}
-            onHover={setHoveredGame}
+            onHover={(g) => setHoveredId(g ? g.id : null)}
             onSelect={selectGame}
             showLabel={showLabels}
             selectedId={selectedGame?.id ?? null}
+            hoveredId={hoveredId}
           />
         ))}
 
@@ -568,31 +614,63 @@ export default function ThreeCube({
         <CameraTarget target={selectedGame ? avgToPosition(selectedGame) : null} />
       </Canvas>
 
-      {hoveredGame ? (
-        <div className="pointer-events-none absolute left-4 top-4 border border-stroke bg-bg/95 px-4 py-3 text-sm animate-fade-in z-20">
-          <div className="font-[family-name:var(--font-dharma)] text-lg font-normal uppercase text-ink leading-none">
-            {hoveredGame.name}
+      <div className="absolute left-4 top-4 bottom-16 w-64 flex flex-col border border-stroke bg-bg/95 z-20 animate-fade-in">
+        <div className="border-b border-stroke px-3 py-3">
+          <div className="relative">
+            <Search size={12} className="absolute left-2 top-1/2 -translate-y-1/2 text-ink-muted pointer-events-none" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search games"
+              className="w-full bg-bg-raised border border-stroke pl-7 pr-2 py-1.5 text-xs text-ink placeholder:text-ink-muted font-[family-name:var(--font-mono)] uppercase tracking-wider focus:border-acid transition-[border-color] duration-200"
+            />
           </div>
-          <div className="mt-2 flex items-center gap-3 text-xs font-[family-name:var(--font-mono)] uppercase tracking-wider">
-            <span className="flex items-center gap-1">
-              <span className="h-1.5 w-1.5 bg-acid" />
-              Exec {Math.round(hoveredGame.exec_avg)}
-            </span>
-            <span className="flex items-center gap-1">
-              <span className="h-1.5 w-1.5 bg-cyan" />
-              Info {Math.round(hoveredGame.info_avg)}
-            </span>
-            <span className="flex items-center gap-1">
-              <span className="h-1.5 w-1.5 bg-red" />
-              Mental {Math.round(hoveredGame.mental_avg)}
-            </span>
-          </div>
-          <div className="mt-1 text-[11px] text-ink-muted font-[family-name:var(--font-mono)] uppercase tracking-wider">
-            {hoveredGame.vote_count} vote
-            {hoveredGame.vote_count === 1 ? '' : 's'}
+          <div className="mt-2 text-[10px] text-ink-muted font-[family-name:var(--font-mono)] uppercase tracking-wider">
+            {filteredGames.length} / {gamesWithVotes.length} games
           </div>
         </div>
-      ) : null}
+        <div className="flex-1 overflow-y-auto">
+          {filteredGames.length === 0 ? (
+            <div className="px-3 py-4 text-[11px] text-ink-muted font-[family-name:var(--font-mono)] uppercase tracking-wider">
+              No matches
+            </div>
+          ) : (
+            filteredGames.map((game) => {
+              const isActive = hoveredId === game.id;
+              const isSelected = selectedGame?.id === game.id;
+              const dotColor = gameColor(game);
+              const hex = `#${dotColor.getHexString()}`;
+              return (
+                <button
+                  key={game.id}
+                  onMouseEnter={() => setHoveredId(game.id)}
+                  onMouseLeave={() => setHoveredId(null)}
+                  onClick={(e) => {
+                    selectGame(game);
+                    e.currentTarget.blur();
+                  }}
+                  className={`group relative flex w-full items-center gap-2 px-3 py-2 text-left ${
+                    isActive ? 'bg-bg-raised' : 'hover:bg-bg-raised/60'
+                  } ${isSelected ? 'border-l-2' : 'border-l-2 border-transparent'}`}
+                  style={isSelected ? { borderLeftColor: hex } : undefined}
+                >
+                  <span
+                    className="h-2 w-2 shrink-0"
+                    style={{ backgroundColor: hex }}
+                  />
+                  <span className="flex-1 truncate font-[family-name:var(--font-body)] text-xs text-ink group-hover:text-ink">
+                    {game.name}
+                  </span>
+                  <span className="text-[10px] tabular-nums text-ink-muted font-[family-name:var(--font-mono)]">
+                    {game.vote_count}
+                  </span>
+                </button>
+              );
+            })
+          )}
+        </div>
+      </div>
 
       {selectedGame ? (
         <CubeStatsCard
@@ -635,7 +713,7 @@ export default function ThreeCube({
             localStorage.setItem('triaxis.showLabels', String(next));
           }
         }}
-        className="absolute bottom-6 left-6 flex items-center gap-3 border border-stroke bg-bg/95 px-3 py-2 text-[11px] font-semibold text-ink-dim font-[family-name:var(--font-mono)] uppercase tracking-wider transition-all hover:text-acid hover:border-acid"
+        className="absolute bottom-6 left-4 flex items-center gap-3 border border-stroke bg-bg/95 px-3 py-2 text-[11px] font-semibold text-ink-dim font-[family-name:var(--font-mono)] uppercase tracking-wider transition-all hover:text-acid hover:border-acid"
         aria-pressed={showLabels}
       >
         <span
