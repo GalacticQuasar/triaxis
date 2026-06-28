@@ -92,6 +92,7 @@ components/
   HeroCubeWithLabel.tsx   # Client wrapper for HeroCube + bottom-right GlitchText label
   GlitchText.tsx          # Per-character resolve-from-random glitch animation
   SmoothScrollLink.tsx    # Client `<a>` wrapper that smooth-scrolls to an in-page anchor via scrollIntoView (opt-in; no global scroll-behavior)
+  CatalogSearch.tsx       # Client search box + sort tabs + grid for the home catalog section; owns both sort (client state, sliding highlight) and name/genre filter. `app/page.tsx` no longer reads `searchParams` — pass it the unsorted `games`.
 lib/
   db.ts                   # Turso (libSQL) async client, schema bootstrap (cached), query helpers, toPlain Row-stripping
   seed.ts                 # Seed 10 games + 30 initial votes (3 per game); run with --env-file=.env

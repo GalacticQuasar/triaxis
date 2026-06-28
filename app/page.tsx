@@ -1,5 +1,4 @@
 import { ensureSchema, getAllGames, getAllVotesByGameId } from '@/lib/db';
-import { sortGames, SortKey } from '@/lib/utils';
 import CatalogSearch from '@/components/CatalogSearch';
 import HeroCubeWithLabel from '@/components/HeroCubeWithLabel';
 import SmoothScrollLink from '@/components/SmoothScrollLink';
@@ -7,18 +6,14 @@ import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
-export default async function Home({ searchParams }: { searchParams: Promise<{ sort?: string }> }) {
+export default async function Home() {
   await ensureSchema();
-  const { sort } = await searchParams;
-  const sortKey: SortKey = ['votes', 'exec', 'info', 'mental'].includes(sort as string) ? (sort as SortKey) : 'votes';
 
   // Parallel: games + all votes in 2 round-trips instead of 1 + N sequential.
   const [games, votesByGameId] = await Promise.all([
     getAllGames(),
     getAllVotesByGameId(),
   ]);
-
-  const sortedGames = sortGames(games, sortKey);
 
   return (
     <div className="animate-fade-in">
@@ -71,39 +66,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
 
       {/* Catalog Section */}
       <section id="catalog" className="mx-auto max-w-6xl px-6 py-10 scroll-mt-16">
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between border-b border-stroke pb-5">
-          <div>
-            <h2 className="font-[family-name:var(--font-dharma)] text-4xl font-normal uppercase tracking-wide text-ink">
-              Game Catalog
-            </h2>
-            <p className="text-xs text-ink-muted mt-1 font-[family-name:var(--font-mono)] uppercase tracking-wider">
-              {sortedGames.length} games rated by the community
-            </p>
-          </div>
-          <div className="flex items-center gap-1 text-sm border border-stroke bg-panel p-1">
-            {[
-              { key: 'votes', label: 'Most Voted' },
-              { key: 'exec', label: 'Execution' },
-              { key: 'info', label: 'Info' },
-              { key: 'mental', label: 'Mental' },
-            ].map((s) => (
-              <Link
-                key={s.key}
-                href={`/?sort=${s.key}`}
-                scroll={false}
-                className={`px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider transition-all ${
-                  sortKey === s.key
-                    ? 'bg-acid text-bg'
-                    : 'text-ink-dim hover:text-acid'
-                }`}
-              >
-                {s.label}
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        <CatalogSearch games={sortedGames} />
+        <CatalogSearch games={games} />
       </section>
     </div>
   );
