@@ -636,7 +636,7 @@ export default function ThreeCube({
               No matches
             </div>
           ) : (
-            filteredGames.map((game) => {
+            filteredGames.map((game, index) => {
               const isActive = hoveredId === game.id;
               const isSelected = selectedGame?.id === game.id;
               const dotColor = gameColor(game);
@@ -650,10 +650,14 @@ export default function ThreeCube({
                     selectGame(game);
                     e.currentTarget.blur();
                   }}
-                  className={`group relative flex w-full items-center gap-2 px-3 py-2 text-left ${
+                  className={`group relative flex w-full items-center gap-2 px-3 py-2 text-left opacity-0 animate-fade-in-up ${
                     isActive ? 'bg-bg-raised' : 'hover:bg-bg-raised/60'
                   } ${isSelected ? 'border-l-2' : 'border-l-2 border-transparent'}`}
-                  style={isSelected ? { borderLeftColor: hex } : undefined}
+                  style={{
+                    animationDelay: `${Math.min(index * 0.04, 0.4)}s`,
+                    animationFillMode: 'forwards',
+                    ...(isSelected ? { borderLeftColor: hex } : {}),
+                  }}
                 >
                   <span
                     className="h-2 w-2 shrink-0"
