@@ -2,7 +2,9 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Game, Vote } from '@/lib/db';
+import { nearestNeighbors, type Neighbor } from '@/lib/similarity';
 import { ArrowUpRight, Sigma, TrendingUp } from 'lucide-react';
 
 const ANIMATION_TOTAL_MS = 1150;
@@ -232,6 +234,11 @@ export default function CubeStatsCard({
     return scores.reduce((max, s) => (s.value > max.value ? s : max), scores[0]);
   }, [game]);
 
+  const neighbors = useMemo(
+    () => nearestNeighbors(game, allGames, 4),
+    [game, allGames],
+  );
+
   const statRows = [
     { stats: execStats, ...METRICS[0], gameAvg: game.exec_avg, rank: ranks.exec },
     { stats: infoStats, ...METRICS[1], gameAvg: game.info_avg, rank: ranks.info },
@@ -330,6 +337,65 @@ export default function CubeStatsCard({
           <ArrowUpRight size={12} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
         </button>
       </div>
+
+      {neighbors.length > 0 ? (
+        <div
+          className="mt-5 animate-fade-in-up"
+          style={{ animationDelay: '0.62s', animationFillMode: 'both' }}
+        >
+          <div className="mb-2 flex items-center justify-between border-b border-stroke pb-1.5">
+            <h3 className="text-[11px] uppercase tracking-widest text-ink-muted font-[family-name:var(--font-mono)] font-semibold">
+              Similar Games
+            </h3>
+            <span className="text-[9px] uppercase tracking-wider text-ink-muted font-[family-name:var(--font-mono)]">
+              {neighbors.length} nearest
+            </span>
+          </div>
+          <ul className="space-y-1.5">
+            {neighbors.map((n, i) => (
+              <NeighborRow key={n.id} neighbor={n} index={i} />
+            ))}
+          </ul>
+        </div>
+      ) : null}
     </div>
+  );
+}
+
+function NeighborRow({ neighbor, index }: { neighbor: Neighbor; index: number }) {
+  const { distance, ...game } = neighbor;
+  const nameSum = game.name.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  const hue1 = (nameSum * 137.5) % 360;
+  const dominant = Math.max(game.exec_avg, game.info_avg, game.mental_avg);
+  const dominantColor =
+    dominant === game.exec_avg ? COLORS.exec
+      : dominant === game.info_avg ? COLORS.info
+        : COLORS.mental;
+  return (
+    <li
+      className="opacity-0 animate-fade-in-up"
+      style={{ animationDelay: `${0.66 + index * 0.05}s`, animationFillMode: 'both' }}
+    >
+      <Link
+        href={`/game/${game.slug}`}
+        className="group flex items-center gap-2 border border-stroke bg-bg-raised px-2 py-1.5 transition-colors hover:border-acid"
+      >
+        <span
+          className="h-5 w-5 shrink-0 border border-stroke"
+          style={{ background: `linear-gradient(135deg, hsl(${hue1} 70% 35%), hsl(${(hue1 + 40) % 360} 60% 25%))` }}
+        />
+        <span className="flex-1 truncate text-[11px] font-semibold text-ink group-hover:text-acid transition-colors font-[family-name:var(--font-body)]">
+          {game.name}
+        </span>
+        <span
+          className="h-1 w-6 shrink-0"
+          style={{ backgroundColor: dominantColor, boxShadow: `0 0 6px ${dominantColor}50` }}
+          title={`Dominant axis Δ${distance.toFixed(1)}`}
+        />
+        <span className="text-[10px] tabular-nums text-ink-muted font-[family-name:var(--font-mono)]">
+          {distance.toFixed(1)}
+        </span>
+      </Link>
+    </li>
   );
 }

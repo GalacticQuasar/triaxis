@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { HelpCircle, X } from 'lucide-react';
 
 const EXAMPLES = [
@@ -29,6 +29,22 @@ const EXAMPLES = [
 
 export default function ScoringGuide() {
   const [open, setOpen] = useState(false);
+  const [closing, setClosing] = useState(false);
+  const FADE_MS = 250;
+
+  function dismiss() {
+    if (closing) return;
+    setClosing(true);
+  }
+
+  useEffect(() => {
+    if (!closing) return;
+    const t = setTimeout(() => {
+      setOpen(false);
+      setClosing(false);
+    }, FADE_MS);
+    return () => clearTimeout(t);
+  }, [closing]);
 
   return (
     <>
@@ -43,13 +59,8 @@ export default function ScoringGuide() {
       </button>
 
       {open ? (
-        <div
-          className="fixed inset-0 z-50 flex items-start justify-center px-4 py-12 animate-fade-in"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setOpen(false);
-          }}
-        >
-          <div className="absolute inset-0 bg-bg/90" />
+        <div className={`fixed inset-0 z-50 flex items-center justify-center px-4 py-12 ${closing ? 'animate-fade-out' : 'animate-fade-in'}`}>
+          <div className="absolute inset-0 bg-bg/90" onClick={dismiss} />
 
           <div className="relative w-full max-w-2xl border border-stroke bg-panel p-6 sm:p-8 shadow-[8px_8px_0_rgba(0,0,0,0.5)]">
             <div className="mb-6 flex items-start justify-between border-b border-stroke pb-3">
@@ -63,7 +74,7 @@ export default function ScoringGuide() {
               </div>
               <button
                 type="button"
-                onClick={() => setOpen(false)}
+                onClick={dismiss}
                 className="btn p-2"
                 aria-label="Close guide"
               >

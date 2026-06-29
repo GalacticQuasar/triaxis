@@ -1,5 +1,7 @@
-import { ensureSchema, getGameBySlug } from '@/lib/db';
+import { ensureSchema, getGameBySlug, getAllGames } from '@/lib/db';
+import { nearestNeighbors } from '@/lib/similarity';
 import VoteSliders from '@/components/VoteSliders';
+import SimilarGameRow from '@/components/SimilarGameRow';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
@@ -7,7 +9,7 @@ export const dynamic = 'force-dynamic';
 export default async function GameDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   await ensureSchema();
   const { slug } = await params;
-  const game = await getGameBySlug(slug);
+  const [game, allGames] = await Promise.all([getGameBySlug(slug), getAllGames()]);
 
   if (!game) {
     return (
@@ -87,6 +89,28 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
         initialMentalAvg={game.mental_avg}
         initialVoteCount={game.vote_count}
       />
+
+      {(() => {
+        const neighbors = nearestNeighbors(game, allGames, 4);
+        if (neighbors.length === 0) return null;
+        return (
+          <section className="mt-10 animate-fade-in" style={{ animationDelay: '0.1s', animationFillMode: 'both' }}>
+            <div className="mb-4 flex items-center gap-3 border-b border-stroke pb-2">
+              <h2 className="font-[family-name:var(--font-dharma)] text-2xl font-normal uppercase tracking-wide text-ink">
+                Similar Games
+              </h2>
+              <span className="text-[10px] text-ink-muted font-[family-name:var(--font-mono)] uppercase tracking-wider">
+                Nearest neighbors in 3-axis space
+              </span>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {neighbors.map((n, i) => (
+                <SimilarGameRow key={n.id} neighbor={n} index={i} />
+              ))}
+            </div>
+          </section>
+        );
+      })()}
     </div>
   );
 }

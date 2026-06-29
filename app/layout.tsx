@@ -71,6 +71,7 @@ export default function RootLayout({
 
             <div className="flex items-center gap-1 text-sm ml-auto">
               <NavLink href="/" label="Catalog" />
+              <NavLink href="/discover" label="Discover" />
               <NavLink href="/cube" label="3D_Cube" />
             </div>
           </nav>

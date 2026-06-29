@@ -6,6 +6,7 @@ import { OrbitControls, Text, Line, Billboard } from '@react-three/drei';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { Move, ZoomIn, MousePointerClick, Search, ArrowDown } from 'lucide-react';
 import CubeStatsCard from './CubeStatsCard';
+import { nearestNeighbors } from '@/lib/similarity';
 import * as THREE from 'three';
 import { Game, Vote } from '@/lib/db';
 
@@ -295,6 +296,42 @@ function GameDot({
           {game.name}
         </Text>
       </Billboard>
+    </group>
+  );
+}
+
+// Draw faint lines from the selected game's dot to its top-K nearest neighbors
+// so the geometric intuition behind "similar games" is visible in the scatter.
+// Memoized on selectedGame.id so it only recomputes on selection change.
+function NeighborLines({
+  seed,
+  games,
+}: {
+  seed: Game;
+  games: Game[];
+}) {
+  const neighbors = useMemo(
+    () => nearestNeighbors(seed, games, 6),
+    [seed, games],
+  );
+  const seedPos = useMemo(() => avgToPosition(seed), [seed]);
+
+  return (
+    <group>
+      {neighbors.map((n) => {
+        const end = avgToPosition(n);
+        const color = gameColor(n);
+        return (
+          <Line
+            key={n.id}
+            points={[seedPos, end]}
+            color={color}
+            lineWidth={1}
+            transparent
+            opacity={0.35}
+          />
+        );
+      })}
     </group>
   );
 }
@@ -599,6 +636,10 @@ export default function ThreeCube({
             votes={votesByGameId[selectedGame.id] ?? []}
             reverse={false}
           />
+        ) : null}
+
+        {selectedGame ? (
+          <NeighborLines seed={selectedGame} games={games} />
         ) : null}
 
         {exitingGames.map((game) => (
