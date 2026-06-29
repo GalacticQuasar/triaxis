@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Game } from '@/lib/db';
 import { nearestNeighbors, meanVector, type AxisWeights, type TargetVector } from '@/lib/similarity';
 import GameCard from '@/components/GameCard';
+import TargetVectorViz from '@/components/TargetVectorViz';
 import { Search, X, Target, Plus, Check, Info } from 'lucide-react';
 
 const COLORS = {
@@ -55,7 +56,6 @@ export default function DiscoverClient({ games }: { games: Game[] }) {
   const [manual, setManual] = useState<TargetVector>(() => loadState()?.manual ?? DEFAULT_MANUAL);
   const [weights, setWeights] = useState<AxisWeights>(() => loadState()?.weights ?? DEFAULT_WEIGHTS);
   const [search, setSearch] = useState('');
-  const [submitted, setSubmitted] = useState(false);
 
   // Persist whenever any control changes.
   useEffect(() => {
@@ -97,37 +97,37 @@ export default function DiscoverClient({ games }: { games: Game[] }) {
 
   function togglePick(id: number) {
     setPickIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
-    setSubmitted(false);
   }
 
   function clearPicks() {
     setPickIds([]);
-    setSubmitted(false);
   }
 
-  const canSubmit = mode === 'pick' ? pickGames.length > 0 : true;
+  const hasTarget = mode === 'pick' ? pickGames.length > 0 : true;
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-8 animate-fade-in">
-      <div className="mb-8">
-        <Link href="/" className="glitch-link text-xs text-ink-muted group">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" strokeLinejoin="miter" className="transition-transform group-hover:-translate-x-0.5 inline mr-1">
-            <path d="M19 12H5M12 19l-7-7 7-7" />
-          </svg>
-          Back to catalog
-        </Link>
-        <h1 className="mt-4 font-[family-name:var(--font-dharma)] text-5xl font-normal uppercase tracking-wide text-ink">
-          Discover
-        </h1>
-        <p className="mt-1 text-xs text-ink-muted font-[family-name:var(--font-mono)] uppercase tracking-wider">
-          Find games positioned near your taste across Execution, Info, and Mental.
-        </p>
-      </div>
+      <div className="mb-8 flex items-end justify-between gap-4">
+        <div>
+          <Link href="/" className="glitch-link text-xs text-ink-muted group">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" strokeLinejoin="miter" className="transition-transform group-hover:-translate-x-0.5 inline mr-1">
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            Back to catalog
+          </Link>
+          <h1 className="mt-4 font-[family-name:var(--font-dharma)] text-5xl font-normal uppercase tracking-wide text-ink">
+            Discover
+          </h1>
+          <p className="mt-1 text-xs text-ink-muted font-[family-name:var(--font-mono)] uppercase tracking-wider">
+            Find games positioned near your taste across Execution, Info, and Mental.
+          </p>
+        </div>
 
-      {/* Mode toggle */}
-      <div className="mb-6 relative flex items-center gap-1 border border-stroke bg-panel p-1 w-fit">
-        <ModeButton active={mode === 'pick'} onClick={() => setMode('pick')} label="Pick" />
-        <ModeButton active={mode === 'manual'} onClick={() => setMode('manual')} label="Manual" />
+        {/* Mode toggle */}
+        <div className="relative flex items-center gap-1 border border-stroke bg-panel p-1 w-fit shrink-0">
+          <ModeButton active={mode === 'pick'} onClick={() => setMode('pick')} label="Pick" />
+          <ModeButton active={mode === 'manual'} onClick={() => setMode('manual')} label="Manual" />
+        </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr]">
@@ -146,27 +146,6 @@ export default function DiscoverClient({ games }: { games: Game[] }) {
           ) : (
             <ManualPanel manual={manual} setManual={setManual} />
           )}
-
-          {/* Target readout */}
-          <div className="mt-5 border-t border-stroke pt-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Target size={12} className="text-acid" />
-              <span className="text-[10px] uppercase tracking-widest text-ink-muted font-[family-name:var(--font-mono)] font-semibold">
-                Target Vector
-              </span>
-            </div>
-            {target ? (
-              <div className="grid grid-cols-3 gap-2">
-                <TargetCell label="Exec" value={target.exec_avg} color={COLORS.exec} />
-                <TargetCell label="Info" value={target.info_avg} color={COLORS.info} />
-                <TargetCell label="Mind" value={target.mental_avg} color={COLORS.mental} />
-              </div>
-            ) : (
-              <p className="text-[11px] text-ink-muted font-[family-name:var(--font-mono)] uppercase tracking-wider">
-                {mode === 'pick' ? 'Select at least one game' : 'Set your target'}
-              </p>
-            )}
-          </div>
 
           {/* Per-axis weights */}
           <div className="mt-5 border-t border-stroke pt-4">
@@ -200,53 +179,34 @@ export default function DiscoverClient({ games }: { games: Game[] }) {
 
         {/* Right: results */}
         <div>
+          {mode === 'pick' && <TargetVectorViz target={target} pickGames={pickGames} mode={mode} />}
+
           <div className="mb-5 flex items-center justify-between border-b border-stroke pb-3">
             <h2 className="font-[family-name:var(--font-dharma)] text-3xl font-normal uppercase tracking-wide text-ink">
               Matches
             </h2>
             <span className="text-[10px] text-ink-muted font-[family-name:var(--font-mono)] uppercase tracking-wider">
-              {submitted ? `${results.length} results` : 'Tap Find Similar'}
+              {hasTarget && target ? `${results.length} results` : 'No target set'}
             </span>
           </div>
 
-          {!submitted || !target ? (
+          {!hasTarget || !target ? (
             <div className="flex flex-col items-center justify-center border border-dashed border-stroke bg-panel/40 py-20 text-center">
               <Target size={28} className="text-ink-muted mb-3" />
               <p className="text-xs text-ink-muted font-[family-name:var(--font-mono)] uppercase tracking-wider">
-                {mode === 'pick' && pickGames.length === 0
-                  ? 'Pick games to find neighbors'
-                  : 'Tap Find Similar to compute matches'}
+                {mode === 'pick' ? 'Pick games to find neighbors' : 'Set your target'}
               </p>
-              <button
-                type="button"
-                disabled={!canSubmit}
-                onClick={() => setSubmitted(true)}
-                className="mt-5 btn btn-primary disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                Find Similar
-              </button>
             </div>
           ) : results.length === 0 ? (
             <div className="border border-dashed border-stroke bg-panel/40 py-16 text-center text-xs text-ink-muted font-[family-name:var(--font-mono)] uppercase tracking-wider">
               No matches. Try adjusting weights or selecting different games.
             </div>
           ) : (
-            <>
-              <div className="mb-4 flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => setSubmitted(true)}
-                  className="btn btn-primary"
-                >
-                  Recompute
-                </button>
-              </div>
-              <div className="grid gap-5 sm:grid-cols-2">
-                {results.map((g, i) => (
-                  <GameCard key={g.id} game={g} index={i} />
-                ))}
-              </div>
-            </>
+            <div className="grid gap-5 sm:grid-cols-2">
+              {results.map((g, i) => (
+                <GameCard key={g.id} game={g} index={i} />
+              ))}
+            </div>
           )}
         </div>
       </div>
@@ -354,17 +314,6 @@ function ModeButton({ active, onClick, label }: { active: boolean; onClick: () =
     >
       {label}
     </button>
-  );
-}
-
-function TargetCell({ label, value, color }: { label: string; value: number; color: string }) {
-  return (
-    <div className="border border-stroke bg-bg-raised px-2 py-2">
-      <div className="text-[9px] uppercase tracking-widest text-ink-muted font-[family-name:var(--font-mono)]">{label}</div>
-      <div className="text-lg tabular-nums font-[family-name:var(--font-dharma)] leading-none mt-0.5" style={{ color }}>
-        {Math.round(value)}
-      </div>
-    </div>
   );
 }
 
@@ -530,8 +479,17 @@ function ManualPanel({
   ];
   return (
     <div>
-      <div className="mb-3 text-[10px] uppercase tracking-widest text-ink-muted font-[family-name:var(--font-mono)] font-semibold">
-        Set Target Manually
+      <div className="mb-3 flex items-center justify-between">
+        <span className="text-[10px] uppercase tracking-widest text-ink-muted font-[family-name:var(--font-mono)] font-semibold">
+          Set Target Manually
+        </span>
+        <button
+          type="button"
+          onClick={() => setManual(DEFAULT_MANUAL)}
+          className="text-[10px] uppercase tracking-wider text-ink-muted hover:text-red font-[family-name:var(--font-mono)] transition-colors"
+        >
+          Reset
+        </button>
       </div>
       <p className="mb-4 text-[11px] text-ink-muted font-[family-name:var(--font-mono)] leading-relaxed">
         Drag each axis to the score you want. We&apos;ll find games near this point.

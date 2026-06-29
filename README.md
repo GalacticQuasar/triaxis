@@ -7,6 +7,7 @@ A platform for rating competitive games on three independent axes: **Execution**
 - **Game Catalog** — 10 hand-picked competitive games in a responsive, sortable grid
 - **Anonymous Voting** — Three sliders (0–100) per game with a built-in scoring guide
 - **3D Visualization** — Interactive scatter plot at `/cube` showing games positioned by their averages
+- **Discover** — Taste-profile page at `/discover`: pick favorites (mean vector) or set a manual target, tune per-axis emphasis, and get live nearest-neighbor matches with no submit button
 
 ## Tech Stack
 
@@ -81,11 +82,14 @@ app/
     Footer.tsx            # Client footer (hidden on /cube)
   cube/page.tsx           # 3D scatter plot
   game/[slug]/page.tsx    # Game detail + voting
+  discover/page.tsx       # Taste-profile discovery (Pick / Manual modes)
   api/games/route.ts      # Games API
   api/votes/route.ts      # Votes API
 components/
   GameCard.tsx            # Grid item with bars and vote count
   VoteSliders.tsx         # Three colored sliders
+  DiscoverClient.tsx      # /discover client UI (Pick/Manual, live results)
+  TargetVectorViz.tsx     # Pick-mode target vector viz (per-axis dots + avg marker)
 
   ThreeCube.tsx           # R3F Canvas + scene setup
   CubeStatsCard.tsx       # Rich stats panel shown on cube dot selection
@@ -96,6 +100,7 @@ components/
 lib/
   db.ts                   # Turso (libSQL) async client, schema, helpers
   seed.ts                 # Seed 10 competitive games + 100 votes (1 hardcoded + 9 seeded-random per game)
+  similarity.ts           # Pure vector-similarity engine (weighted Euclidean, meanVector)
   utils.ts                # Sorting helpers
 public/
   placeholder-cover.svg   # Placeholder cover art (plus default Next.js assets)
