@@ -358,10 +358,11 @@ input[type="range"]::-moz-range-thumb {
   content: "";
   position: absolute;
   bottom: -2px;
-  left: 0;
+  left: 50%;
   width: 0;
   height: 1px;
   background: var(--color-acid);
+  transform: translateX(-50%);
   transition: width 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .glitch-link:hover {
