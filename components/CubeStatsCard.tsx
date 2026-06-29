@@ -2,7 +2,6 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { Game, Vote } from '@/lib/db';
 import { nearestNeighbors, type Neighbor } from '@/lib/similarity';
 import { ArrowUpRight, Sigma, TrendingUp } from 'lucide-react';
@@ -181,10 +180,14 @@ export default function CubeStatsCard({
   game,
   votes,
   allGames,
+  onHoverNeighbor,
+  onSelectNeighbor,
 }: {
   game: Game;
   votes: Vote[];
   allGames: Game[];
+  onHoverNeighbor?: (game: Game | null) => void;
+  onSelectNeighbor?: (game: Game) => void;
 }) {
   const router = useRouter();
 
@@ -353,7 +356,13 @@ export default function CubeStatsCard({
           </div>
           <ul className="space-y-1.5">
             {neighbors.map((n, i) => (
-              <NeighborRow key={n.id} neighbor={n} index={i} />
+              <NeighborRow
+                key={n.id}
+                neighbor={n}
+                index={i}
+                onHoverNeighbor={onHoverNeighbor}
+                onSelectNeighbor={onSelectNeighbor}
+              />
             ))}
           </ul>
         </div>
@@ -362,9 +371,19 @@ export default function CubeStatsCard({
   );
 }
 
-function NeighborRow({ neighbor, index }: { neighbor: Neighbor; index: number }) {
+function NeighborRow({
+  neighbor,
+  index,
+  onHoverNeighbor,
+  onSelectNeighbor,
+}: {
+  neighbor: Neighbor;
+  index: number;
+  onHoverNeighbor?: (game: Game | null) => void;
+  onSelectNeighbor?: (game: Game) => void;
+}) {
   const { distance, ...game } = neighbor;
-  const nameSum = game.name.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  const nameSum = game.name.split('').reduce((a, c) => a + c.charCodeAt(0), 1);
   const hue1 = (nameSum * 137.5) % 360;
   const dominant = Math.max(game.exec_avg, game.info_avg, game.mental_avg);
   const dominantColor =
@@ -376,15 +395,18 @@ function NeighborRow({ neighbor, index }: { neighbor: Neighbor; index: number })
       className="opacity-0 animate-fade-in-up"
       style={{ animationDelay: `${0.66 + index * 0.05}s`, animationFillMode: 'both' }}
     >
-      <Link
-        href={`/game/${game.slug}`}
-        className="group flex items-center gap-2 border border-stroke bg-bg-raised px-2 py-1.5 transition-colors hover:border-acid"
+      <button
+        type="button"
+        onMouseEnter={() => onHoverNeighbor?.(game)}
+        onMouseLeave={() => onHoverNeighbor?.(null)}
+        onClick={() => onSelectNeighbor?.(game)}
+        className="group flex w-full items-center gap-2 border border-stroke bg-bg-raised px-2 py-1.5 transition-colors hover:border-acid"
       >
         <span
           className="h-5 w-5 shrink-0 border border-stroke"
           style={{ background: `linear-gradient(135deg, hsl(${hue1} 70% 35%), hsl(${(hue1 + 40) % 360} 60% 25%))` }}
         />
-        <span className="flex-1 truncate text-[11px] font-semibold text-ink group-hover:text-acid transition-colors font-[family-name:var(--font-body)]">
+        <span className="flex-1 truncate text-left text-[11px] font-semibold text-ink group-hover:text-acid transition-colors font-[family-name:var(--font-body)]">
           {game.name}
         </span>
         <span
@@ -395,7 +417,7 @@ function NeighborRow({ neighbor, index }: { neighbor: Neighbor; index: number })
         <span className="text-[10px] tabular-nums text-ink-muted font-[family-name:var(--font-mono)]">
           {distance.toFixed(1)}
         </span>
-      </Link>
+      </button>
     </li>
   );
 }

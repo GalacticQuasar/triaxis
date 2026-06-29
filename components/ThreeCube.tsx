@@ -6,7 +6,6 @@ import { OrbitControls, Text, Line, Billboard } from '@react-three/drei';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { Move, ZoomIn, MousePointerClick, Search, ArrowDown } from 'lucide-react';
 import CubeStatsCard from './CubeStatsCard';
-import { nearestNeighbors } from '@/lib/similarity';
 import * as THREE from 'three';
 import { Game, Vote } from '@/lib/db';
 
@@ -300,41 +299,7 @@ function GameDot({
   );
 }
 
-// Draw faint lines from the selected game's dot to its top-K nearest neighbors
-// so the geometric intuition behind "similar games" is visible in the scatter.
-// Memoized on selectedGame.id so it only recomputes on selection change.
-function NeighborLines({
-  seed,
-  games,
-}: {
-  seed: Game;
-  games: Game[];
-}) {
-  const neighbors = useMemo(
-    () => nearestNeighbors(seed, games, 6),
-    [seed, games],
-  );
-  const seedPos = useMemo(() => avgToPosition(seed), [seed]);
 
-  return (
-    <group>
-      {neighbors.map((n) => {
-        const end = avgToPosition(n);
-        const color = gameColor(n);
-        return (
-          <Line
-            key={n.id}
-            points={[seedPos, end]}
-            color={color}
-            lineWidth={1}
-            transparent
-            opacity={0.35}
-          />
-        );
-      })}
-    </group>
-  );
-}
 
 const TARGET_LERP_SPEED = 0.04;
 const INITIAL_TARGET = new THREE.Vector3(0, 0, 0);
@@ -638,10 +603,6 @@ export default function ThreeCube({
           />
         ) : null}
 
-        {selectedGame ? (
-          <NeighborLines seed={selectedGame} games={games} />
-        ) : null}
-
         {exitingGames.map((game) => (
           <VoteCluster
             key={`exiting-${game.id}`}
@@ -723,6 +684,8 @@ export default function ThreeCube({
           game={selectedGame}
           votes={votesByGameId[selectedGame.id] ?? []}
           allGames={games}
+          onHoverNeighbor={(g) => setHoveredId(g ? g.id : null)}
+          onSelectNeighbor={selectGame}
         />
       ) : null}
 
