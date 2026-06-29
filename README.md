@@ -93,7 +93,6 @@ components/
   HeroCube.tsx            # Non-interactive rotating mini cube in hero of /
   HeroCubeWithLabel.tsx   # Client wrapper for HeroCube + GlitchText label
   GlitchText.tsx          # Per-character resolve-from-random glitch animation
-  SmoothScrollLink.tsx    # Client <a> wrapper that smooth-scrolls to an in-page anchor
 lib/
   db.ts                   # Turso (libSQL) async client, schema, helpers
   seed.ts                 # Seed 10 competitive games + 100 votes (1 hardcoded + 9 seeded-random per game)

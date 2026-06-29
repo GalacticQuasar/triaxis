@@ -1,8 +1,8 @@
 import { ensureSchema, getAllGames, getAllVotesByGameId } from '@/lib/db';
 import CatalogSearch from '@/components/CatalogSearch';
 import HeroCubeWithLabel from '@/components/HeroCubeWithLabel';
-import SmoothScrollLink from '@/components/SmoothScrollLink';
 import Link from 'next/link';
+import { Search } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,15 +37,16 @@ export default async function Home() {
                 Execution. Information. Mental. Map competitive games in 3D space and discover
                 where your favorites stand.
               </p>
-              <div className="flex items-center gap-4">
-                <SmoothScrollLink href="#catalog" className="btn btn-primary">
-                  Browse Catalog
-                </SmoothScrollLink>
-                <Link href="/cube" className="btn">
+              <div className="flex flex-wrap items-center gap-4">
+                <Link href="/cube" className="btn btn-primary">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" strokeLinejoin="miter">
                     <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
                   </svg>
                   Explore 3D Cube
+                </Link>
+                <Link href="/discover" className="btn">
+                  <Search size={14} strokeWidth={2} />
+                  Find Your Matches
                 </Link>
               </div>
             </div>
