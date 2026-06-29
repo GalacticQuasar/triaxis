@@ -88,7 +88,7 @@ app/
 components/
   GameCard.tsx            # Grid item with bars (used by catalog + /discover results)
   VoteSliders.tsx         # Client component: Community Averages bars + three sliders. Owns averages as state and updates them from the POST response so bars animate without a reload.
-  ScoringGuide.tsx        # Help modal for rating (fade-in/out via closing state + animate-fade-out)
+
   ThreeCube.tsx           # R3F Canvas + scene, left game list + search panel, keyboard nav, NeighborLines on select (full /cube page)
   CubeStatsCard.tsx       # Rich stats panel shown on cube dot selection; includes "Similar Games" list (4 nearest neighbors) at bottom
   cube-viz.tsx            # Shared 3D viz helpers: avgToPosition, voteToPosition, gameColor, VoteCluster, ClusterDot (size-parametrized)
@@ -121,7 +121,7 @@ The current UI is a **techno-grunge** aesthetic.
 - **Buttons**: `.btn` base; `.btn-primary` for CTAs. Clipped corners, 1px borders, uppercase labels.
 - **Links**: `.glitch-link` for hover-underline nav style.
 - **Custom range inputs**: styled in `globals.css` — square track, square thumb, no rounded edges. Range inputs in `DiscoverClient` (axis weights + manual target) additionally use inline `accentColor` to tint the thumb per-axis.
-- **Modals fade in and out.** `ScoringGuide` and `DiscoverClient`'s `EmphasisHelpModal` both use a `closing` state that swaps `animate-fade-in` → `animate-fade-out` (250ms) and unmounts after the animation via a `setTimeout` in a `useEffect`. Clicking the backdrop (an `absolute inset-0` sibling div with `onClick={dismiss}`) and the X button both call the same `dismiss` path. The backdrop div is separate from the outer flex container, so don't put the click handler on the outer container expecting `e.target === e.currentTarget` — it won't fire for backdrop clicks.
+- **Modals fade in and out.** `DiscoverClient`'s `EmphasisHelpModal` uses a `closing` state that swaps `animate-fade-in` → `animate-fade-out` (250ms) and unmounts after the animation via a `setTimeout` in a `useEffect`. Clicking the backdrop (an `absolute inset-0` sibling div with `onClick={dismiss}`) and the X button both call the same `dismiss` path. The backdrop div is separate from the outer flex container, so don't put the click handler on the outer container expecting `e.target === e.currentTarget` — it won't fire for backdrop clicks.
 
 ## Conventions
 

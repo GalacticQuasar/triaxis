@@ -86,7 +86,7 @@ app/
 components/
   GameCard.tsx            # Grid item with bars and vote count
   VoteSliders.tsx         # Three colored sliders
-  ScoringGuide.tsx        # Help modal explaining the axes
+
   ThreeCube.tsx           # R3F Canvas + scene setup
   CubeStatsCard.tsx       # Rich stats panel shown on cube dot selection
   cube-viz.tsx            # Shared 3D viz helpers (size-parametrized)
